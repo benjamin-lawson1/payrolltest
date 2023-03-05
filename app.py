@@ -457,4 +457,4 @@ def send_text(email,subject,body):
 
 with app.app_context():
     db.create_all()
-app.run(debug=True)
+app.run(debug=True, port=8000)
