@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Admin Panel</title>
+{% endblock %}
+
+{% block body %}
+
+
+<h3> Create New User </h3>
+
+<!-- Create User -->
+
+<form action="/create_user" method="post">
+
+    <label for="user">Name:</label>
+    <input type="text" id="user" name="user">
+  
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email">
+
+    <label for="pin">4 Digit Pin:</label>
+    <input type="number" id="pin" name="pin" value="{{random_pin}}">
+
+    <label for="user_type">User Type:</label>
+    <select name="user_type" id="user_type">
+        <option value="crew_member"> crew </option>
+        <option value="manager"> manager </option>
+        <option value="admin"> admin </option>
+    </select>
+  
+    <input type="submit" value="Submit">
+    
+</form>
+
+<!-- Show All Users -->
+
+<h3> All Users </h3>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Pin</th>
+        <th>Type</th>
+        <th>Confirmed?</th>
+    </tr>
+
+	{% for user in users %}
+	<tr>
+		<td>{{ user.name }}</td>
+		<td>{{ user.email }}</td>
+		<td>{{ user.pin }}</td>
+        <td>{{ user.type }}</td>
+        <td>{{ user.confirmed }}</td>
+        <td><a href="/delete_user/{{user.id}}">delete</a></td>
+	<tr>
+	{% endfor %}
+    
+</table>
+{% endblock %}
+
+

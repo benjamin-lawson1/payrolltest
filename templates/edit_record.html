@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Edit Record</title>
+{% endblock %}
+
+{% block body %}
+<div id="user-greeting">
+    Modify your record on {{ date }} or press "back" to return.
+</div>
+<div id="modify-time">
+</div>
+
+<form id="modify-form" action="/commit_record" method="POST">
+
+    <input type="hidden" name="id" value="{{ id }}">
+    <input type="hidden" name="date" value="{{ date }}">
+    <input type="hidden" name="user_pin" value="{{ user_pin }}">
+    <input type="hidden" name="selected_user" value="{{ selected_user }}">
+    <input type="hidden" name="old_start_time" value="{{ start_time }}">
+    <input type="hidden" name="old_end_time" value="{{ end_time }}">
+    <div>
+        <form>
+        <table>
+            <tr>
+                <td><label for="new_start_time"> Update Start Time: </label></td>
+                <td><input class="input" type="time" name="new_start_time" value="{{start_time}}"></td>
+            </tr>
+            <tr>
+                <td><label for="new_end_time"> Update End Time: </label></td>
+                <td><input class="input" type="time" name="new_end_time" value="{{ end_time }}"></td>
+            </tr>
+            <tr>
+                <td><label for="delete"> Delete (Check box and press submit to confirm) </label></td>
+                <td><input class="input" type="checkbox" name="delete"></td>
+            </tr>
+            <tr>
+                <td><label for="reason"> Reason for change: </label></td>
+                <td><input class="input" type="text" name="reason" required></td>
+            </tr>
+            <tr>
+                <td><input class="submit" type="submit" value="Submit Changes"></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <p> *Shawn will be notified with your new start time and reason upon submitting.</p>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title></title>
+{% endblock %}
+
+{% block body %}
+<div id="user-greeting">
+    <h3> {{ greeting }}, Shawn! </h3>
+</div>
+<table>
+    <tr>
+        <form action="/manager_select_user" method="post">
+            <td>
+                <label for="selected_user">Select Crew Member:</label>
+                <select name="selected_user" value="selected_user">
+                    {% for user in users %}
+                    <option value="{{user.name}}" {% if selected_user == user.name %}selected{% endif %}>{{user.name}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="submit" value="Show Results"></td>
+            <td>
+        </form>
+        <a href="/export_csv_action">
+            <button>Export</button>
+        </a></td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Start Time</th>
+        <th>End Time</th> 
+        <th>Note</th> 
+        <th>Edit</th>
+    </tr>
+    
+    {% for row in history %}
+    <tr>
+        <td>{{ row.start.strftime("%b %d, %Y") }}</td>
+        <td>{{ row.start.strftime("%I:%M %p") }}</td>
+        <td>{{ row.end.strftime("%I:%M %p") }}</td>
+        <td>{{ row.report }}</td>
+        <td> <a href="/edit_record/{{row.id}}/{{row.start.strftime('%b %d, %Y')}}/{{row.start.strftime('%H:%M')}}/{{row.end.strftime('%H:%M')}}/{{ user_pin }}/{{ request.form['selected_user'] if request.form['selected_user'] else selected_user }}"> edit </a> </td>
+    </tr>
+    {% endfor %}
+
+</table>
+{% endblock %}
+
+

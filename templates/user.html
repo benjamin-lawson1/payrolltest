@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>{{ user }}</title>
+{% endblock %}
+
+{% block body %}
+
+<!-- Greetings -->
+<body id="time-sheet-body">
+<div id="user-greeting">
+    <p> {{greeting}}, {{ user }}! </p>
+</div>
+
+<!-- Clock In / Out -->
+{% if confirmed == 1 %}
+<div id="confirmed">
+    <p>Welcome!!! You can bookmark this page by tapping "Add to Home screen" in your browsers menu bar .</p>
+</div>
+{% endif %}
+<form id="clock-wrapper" action="/clock_action" method="post">
+    
+    <input type="hidden" name="user" value="{{ user }}">
+    
+    <input id="clock" type="submit" name="clock_status"value="{{ clock_status }}">
+    
+    {% if clock_status == clock_out_text %}
+    
+    <input id="daily-report" type="text" name="report" placeholder="Any notes?">
+    
+    {% endif %}
+    
+</form>
+
+<!-- Timesheet -->
+<table id="time-sheet">
+    <tr class="header">
+        <td class="title" colspan="5">Time Sheet</td>
+    </tr>
+
+    <tr class="header">
+        <th>Date</th>
+        <th>Start</th>
+        <th>Finish</th> 
+        <th>Notes</th>
+        <th></th>
+    </tr>
+
+    <div class="scroll">
+
+    {% for row in history %}
+    <tr class="body">
+        <td>{{ row.start.strftime("%b %d") }}</td>
+        <td>{{ row.start.strftime("%I:%M %p") }}</td>
+        <td>{{ row.end.strftime("%I:%M %p") }}</td>
+        <td>{{ row.report }}</td>
+        <td> 
+            <a href="/edit_record/{{row.id}}/{{row.start.strftime('%b %d, %Y')}}/{{row.start.strftime('%H:%M')}}/{{row.end.strftime('%H:%M')}}/{{ user_pin }}">
+                <button> edit </button>
+            </a> 
+        </td>
+    </tr>
+    {% endfor %}
+
+    </div>
+
+</table>
+{% endblock %}
+</body>
