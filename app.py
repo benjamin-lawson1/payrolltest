@@ -88,10 +88,8 @@ def home(user_pin,selected_user=None):
     # . . determine the manager pin, admin pin
     global manager_pin
     global admin_pin
-    manager_pin = 1111
-    admin_pin = 22222
-    #manager_pin = (Users.query.filter_by(type = 'manager').first()).pin
-    #admin_pin = (Users.query.filter_by(type = 'admin').first()).pin
+    manager_pin = (Users.query.filter_by(type = 'manager').first()).pin
+    admin_pin = (Users.query.filter_by(type = 'admin').first()).pin
     
     # . . . generate greeting
     global greeting
