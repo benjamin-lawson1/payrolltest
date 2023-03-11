@@ -21,6 +21,7 @@ from email.mime.multipart import MIMEMultipart
 
 # . . . import for csv exporting
 from io import StringIO
+from app import app, db
 import csv
 
 # . . . allows app to run 1 thread in the background
