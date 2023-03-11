@@ -348,9 +348,9 @@ def create_user():
             db.session.commit()
 
             
-            subject = "Your KIG Payroll Account has been created"
-            url = url_for('home', user_pin=pin)
-            body = "Please confirm your account by clicking this link below: \n" + url +"\n . . . . "
+            subject = "Your KIG Payroll Account has been created!"
+            url = "https://kigpayroll.herokuapp.com/" + pin
+            body = "You may access your account by clicking on the link below: \n" + url + "        "
             print("email: " + email + " subject: " + subject + " body: " + body)
             
             executor.submit(send_text,email,subject,body)
