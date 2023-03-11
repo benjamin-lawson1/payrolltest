@@ -58,6 +58,10 @@ class History(db.Model):
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Create Routes
 
+
+@app.route("/")
+def home():
+    return "Hello!"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
 @app.route("/<int:user_pin>")
 def home(user_pin,selected_user=None):
