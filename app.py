@@ -37,9 +37,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ihbtkzvmffptlm:49c545ef7f0
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-with app.app_context():
-    db.create_all()
-
 # . . . add db: Users (id, name, email, pin)
 class Users(db.Model):
 
@@ -466,7 +463,8 @@ def send_text(email,subject,body):
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Run App
 
-
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)
