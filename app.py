@@ -4,6 +4,7 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response
 from datetime import datetime
 import random
+from flask_migrate import Migrate
 
 # . . . import ability to perform background tasks
 from concurrent.futures import ThreadPoolExecutor
@@ -32,8 +33,9 @@ app = Flask(__name__)
 
 # . . . set up SQL database
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://ihbtkzvmffptlm:49c545ef7f0eb46f93a14d6b600368da8ca380e24e93533327180ce8d16404ae@ec2-3-93-160-246.compute-1.amazonaws.com:5432/d5k1qki4ju7jgo'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ihbtkzvmffptlm:49c545ef7f0eb46f93a14d6b600368da8ca380e24e93533327180ce8d16404ae@ec2-3-93-160-246.compute-1.amazonaws.com:5432/d5k1qki4ju7jgo'
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # . . . add db: Users (id, name, email, pin)
 class Users(db.Model):
@@ -461,4 +463,6 @@ def send_text(email,subject,body):
 
 with app.app_context():
     db.create_all()
-app.run(debug=True, host="0.0.0.0", port=5000)
+
+if __name__ == '__main__':
+    app.run(debug=True, host="0.0.0.0", port=5000)
