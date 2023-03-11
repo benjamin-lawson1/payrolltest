@@ -31,8 +31,8 @@ app = Flask(__name__)
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Create Databases
 
 # . . . set up SQL database
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://ihbtkzvmffptlm:49c545ef7f0eb46f93a14d6b600368da8ca380e24e93533327180ce8d16404ae@ec2-3-93-160-246.compute-1.amazonaws.com:5432/d5k1qki4ju7jgo'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://ihbtkzvmffptlm:49c545ef7f0eb46f93a14d6b600368da8ca380e24e93533327180ce8d16404ae@ec2-3-93-160-246.compute-1.amazonaws.com:5432/d5k1qki4ju7jgo'
 db = SQLAlchemy(app)
 
 # . . . add db: Users (id, name, email, pin)
@@ -79,8 +79,10 @@ def home(user_pin,selected_user=None):
     # . . determine the manager pin, admin pin
     global manager_pin
     global admin_pin
-    manager_pin = (Users.query.filter_by(type = 'manager').first()).pin
-    admin_pin = (Users.query.filter_by(type = 'admin').first()).pin
+    manager_pin = 1111
+    admin_pin = 22222
+    #manager_pin = (Users.query.filter_by(type = 'manager').first()).pin
+    #admin_pin = (Users.query.filter_by(type = 'admin').first()).pin
     
     # . . . generate greeting
     global greeting
