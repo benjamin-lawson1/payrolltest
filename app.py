@@ -75,8 +75,8 @@ def home(user_pin,selected_user=None):
         # . . . create list, append users, add to db
         new_users = []
         
-        new_users.append(Users(name='Benjamin',email='Benjamin@KiawahIslandGetaways.com',pin='2222',type='admin',confirmed=1))
-        new_users.append(Users(name='Shawn',email='BenjaminLawson4@gmail.com',pin='1111',type='manager',confirmed=1))
+        new_users.append(Users(name='Benjamin',email='Benjamin@KiawahIslandGetaways.com',pin='8475',type='admin',confirmed=1))
+        new_users.append(Users(name='Shawn',email='8433437215@tmomail.net',pin='6817',type='manager',confirmed=1))
         
         for user in new_users:
             db.session.add(user)
