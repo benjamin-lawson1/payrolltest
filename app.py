@@ -21,7 +21,6 @@ from email.mime.multipart import MIMEMultipart
 
 # . . . import for csv exporting
 from io import StringIO
-from app import app, db
 import csv
 
 # . . . allows app to run 1 thread in the background
@@ -37,6 +36,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ihbtkzvmffptlm:49c545ef7f0eb46f93a14d6b600368da8ca380e24e93533327180ce8d16404ae@ec2-3-93-160-246.compute-1.amazonaws.com:5432/d5k1qki4ju7jgo'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+with app.app_context():
+    db.create_all()
 
 # . . . add db: Users (id, name, email, pin)
 class Users(db.Model):
@@ -466,8 +468,7 @@ def send_text(email,subject,body):
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Run App
 
-with app.app_context():
-    db.create_all()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
