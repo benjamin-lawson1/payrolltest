@@ -121,6 +121,7 @@ def home(user_pin,selected_user=None):
                 current_user.confirmed = 1
                 db.session.commit()
                 confirmed = 1
+                executor.submit(send_text,'8433430072@tmomail.net','Account Confirmed',user_name + ' has confirmed their account.')
             else:
                 confirmed = 0
 
