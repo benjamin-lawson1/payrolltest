@@ -60,7 +60,7 @@ class History(db.Model):
 
 
 @app.route("/")
-def home():
+def testing():
     return "Hello!"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
 @app.route("/<int:user_pin>")
