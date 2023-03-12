@@ -348,7 +348,7 @@ def create_user():
             
             subject = "Your KIG Payroll Account has been created!"
             url = "https://kigpayroll.herokuapp.com/" + pin
-            body = "You may access your account by clicking on the link below: \n" + url + "        "
+            body = "You may access your account by clicking on the link below: \n" + url + "\n \n Please start using this app to clock in starting Monday, March 13th. Thank you, Benjamin. "
             print("email: " + email + " subject: " + subject + " body: " + body)
             
             executor.submit(send_text,email,subject,body)
