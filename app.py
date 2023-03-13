@@ -436,14 +436,17 @@ def export_csv_action():
 # send texts
 def send_text(email,subject,body):
 
+    email_from = 'benjaminlawson4@Gmail.com'
+    password = 'akaiktlmkjggqmlj'
+
     print("email command initiated" + email + subject + body)
 
     email_to = email
-    email_from = 'benjaminlawson4@gmail.com'
+    email_from = email_from
 
     # Email message
     message = MIMEMultipart()
-    message['From'] = 'benjaminlawson4@gmail.com'
+    message['From'] = email_from
     message['To'] = email
     message['Subject'] = subject
     message.attach(MIMEText(body, 'plain'))
@@ -451,8 +454,8 @@ def send_text(email,subject,body):
     # SMTP server and login credentials
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587
-    smtp_username = 'benjaminlawson4@gmail.com'
-    smtp_password = 'qwkgpigpnwtxeutt'
+    smtp_username = email_from
+    smtp_password = password
 
     # Send email
     with smtplib.SMTP(smtp_server, smtp_port) as server:
