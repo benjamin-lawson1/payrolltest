@@ -33,7 +33,7 @@ app = Flask(__name__)
 
 # . . . set up SQL database
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://cnfycrojpoyqbt:53e10a5feaadf6a13630c9c4144c42535c9acef35b0e556e9ce1206884e8652c@ec2-3-208-74-199.compute-1.amazonaws.com:5432/dbquei2meh2efd'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://cnfycrojpoyqbt:53e10a5feaadf6a13630c9c4144c42535c9acef35b0e556e9ce1206884e8652c@ec2-3-208-74-199.compute-1.amazonaws.com:5432/dbquei2meh2efd'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
