@@ -162,7 +162,7 @@ def clock_action():
 
     if request.method == 'POST':
         shawn_email = '8433435075@tmomail.net'
-        jeanette_email = '8433430072@tmomail.net'
+        jeanette_email = '8433437215@tmomail.net'
         clock_status = request.form['clock_status']
         user_name = request.form['user']
         user_email = (Users.query.filter_by(name = user_name).first()).email
