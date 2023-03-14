@@ -400,8 +400,19 @@ def edit_user(user_name=None,user_email=None):
         old_name = request.form['old_name']
         new_name = request.form['new_name']
         new_email = request.form['new_email']
-        
-        #!!!!! . . . here is where you update db and work history
+
+        update_user = Users.query.filter_by(name=old_name).first()
+        update_user.name = new_name
+        update_user.email = new_email
+        db.session.commit()
+
+        update_history = History.query.filter_by(name=old_name).all()
+        for record in update_history:
+            record_to_update = History.query.get_or_404(record.id)
+            record_to_update.name = new_name
+            db.session.commit()
+
+        return home(user_pin=admin_pin)
     
     # . . . refresh
     return render_template('edit_user.html', user_name=user_name,user_email=user_email)
