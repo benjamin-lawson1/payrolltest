@@ -5,7 +5,6 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from datetime import datetime
 import random
 from flask_migrate import Migrate
-import os
 
 # . . . import ability to perform background tasks
 from concurrent.futures import ThreadPoolExecutor
@@ -34,7 +33,7 @@ app = Flask(__name__)
 
 # . . . set up SQL database
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['postgresql://cnfycrojpoyqbt:53e10a5feaadf6a13630c9c4144c42535c9acef35b0e556e9ce1206884e8652c@ec2-3-208-74-199.compute-1.amazonaws.com:5432/dbquei2meh2efd']
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://cnfycrojpoyqbt:53e10a5feaadf6a13630c9c4144c42535c9acef35b0e556e9ce1206884e8652c@ec2-3-208-74-199.compute-1.amazonaws.com:5432/dbquei2meh2efd'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
