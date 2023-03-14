@@ -9,7 +9,6 @@ from flask_migrate import Migrate
 # . . . import ability to perform background tasks
 from concurrent.futures import ThreadPoolExecutor
 
-
 # . . . import SQL Alchemy for Databases
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_
@@ -159,9 +158,11 @@ def home(user_pin,selected_user=None):
 def clock_action():
 
     if request.method == 'POST':
-
+        shawn_email = '8433435075@tmomail.net'
+        jeanette_email = '8433430072@tmomail.net'
         clock_status = request.form['clock_status']
         user_name = request.form['user']
+        user_email = (Users.query.filter_by(name = user_name).first()).email
         time_now = datetime.now()
         message_time_now =  time_now.strftime("%I:%M %p on %b %d, %Y")
 
@@ -171,16 +172,15 @@ def clock_action():
             db.session.commit()
 
             # . . . Notify user
-            email = (Users.query.filter_by(name = user_name).first()).email
             subject = "You've Clocked In"
             body = "You've clocked in at " + message_time_now + "."
-            executor.submit(send_text,email,subject,body)
+            executor.submit(send_text,user_email,subject,body)
 
             # . . . Notify manager
-            email = (Users.query.filter_by(type = 'manager').first()).email
             subject = user_name + " has clocked in."
             body = user_name + " has clocked in at " + message_time_now + "." 
-            executor.submit(send_text,email,subject,body)
+            executor.submit(send_text,shawn_email,subject,body)
+            executor.submit(send_text,jeanette_email,subject,body)
         
         elif clock_status == "End Shift":
             report = request.form['report']
@@ -190,16 +190,15 @@ def clock_action():
             db.session.commit()
 
             # . . . send to user
-            email = (Users.query.filter_by(name = user_name).first()).email
             subject = "You've Clocked Out"
             body = "You've clocked out at " + message_time_now + "."
-            executor.submit(send_text,email,subject,body)
+            executor.submit(send_text,user_email,subject,body)
 
             # . . . send to manager
-            email = (Users.query.filter_by(type = 'manager').first()).email
             subject = user_name + " has clocked out."
             body = user_name + " has clocked out at " + message_time_now + ". End of day report :" + report
-            executor.submit(send_text,email,subject,body)
+            executor.submit(send_text,shawn_email,subject,body)
+            executor.submit(send_text,jeanette_email,subject,body)
 
         # . . . find user pin and pass back to home 
         user_pin = (Users.query.filter(Users.name==user_name).first()).pin
