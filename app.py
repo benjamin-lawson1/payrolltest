@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from datetime import datetime
 import random
 from flask_migrate import Migrate
+from sqlalchemy import create_engine
 
 # . . . import ability to perform background tasks
 from concurrent.futures import ThreadPoolExecutor
@@ -21,6 +22,7 @@ from email.mime.multipart import MIMEMultipart
 # . . . import for csv exporting
 from io import StringIO
 import csv
+import os
 
 # . . . allows app to run 1 thread in the background
 executor = ThreadPoolExecutor(2)
@@ -31,8 +33,9 @@ app = Flask(__name__)
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Create Databases
 
 # . . . set up SQL database
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://txmskbstwkbpum:e8b8a759adc9d1c2b4a14f2491a0b2715a073e170bac64934e7d4a4c42236032@ec2-34-236-103-63.compute-1.amazonaws.com:5432/d8duor03jrh489'
+
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///test.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
