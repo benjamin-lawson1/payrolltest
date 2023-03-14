@@ -32,7 +32,7 @@ app = Flask(__name__)
 
 # . . . set up SQL database
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://cnfycrojpoyqbt:53e10a5feaadf6a13630c9c4144c42535c9acef35b0e556e9ce1206884e8652c@ec2-3-208-74-199.compute-1.amazonaws.com:5432/dbquei2meh2efd'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://txmskbstwkbpum:e8b8a759adc9d1c2b4a14f2491a0b2715a073e170bac64934e7d4a4c42236032@ec2-34-236-103-63.compute-1.amazonaws.com:5432/d8duor03jrh489'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -386,6 +386,22 @@ def delete_user(user_id):
 
     # . . . refresh
     return redirect(url_for('home', user_pin=admin_pin))
+
+# edit user
+
+@app.route("/edit_user/<string:user_name>/<string:user_email>",methods=['GET','POST'])
+@app.route("/edit_user",methods=['GET','POST'])
+def edit_user(user_name=None,user_email=None):
+
+    if request.method == 'POST':
+        old_name = request.form['old_name']
+        new_name = request.form['new_name']
+        new_email = request.form['new_email']
+        
+        #!!!!! . . . here is where you update db and work history
+    
+    # . . . refresh
+    return render_template('edit_user.html', user_name=user_name,user_email=user_email)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Manager's Panel
 

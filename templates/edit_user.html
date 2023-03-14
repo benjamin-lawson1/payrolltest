@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Edit Record</title>
+{% endblock %}
+
+{% block body %}
+<div id="user-greeting">
+    Modify your record on {{ date }} or press "back" to return.
+</div>
+<div id="modify-time">
+</div>
+
+<form id="modify-form" action="edit_user" method="POST">
+
+    <input type="hidden" name="old_name" value="{{ user_name }}">
+    <div>
+        <form>
+        <table>
+            <tr>
+                <td><label for="new_name"> Update Name: </label></td>
+                <td><input class="input" type="text" name="new_name" value="{{user_name}}"></td>
+            </tr>
+            <tr>
+                <td><label for="new_email"> Update Email: </label></td>
+                <td><input class="input" type="text" name="new_email" value="{{ user_email }}"></td>
+            </tr>
+            <tr>
+                <td><input type="submit"></td>
+            </tr>
+        </table>
+    </form>
+</div>
+{% endblock %}
+
+
