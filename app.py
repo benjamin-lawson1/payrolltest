@@ -34,7 +34,7 @@ app = Flask(__name__)
 
 # . . . set up SQL database
 
-database_url = os.environ.get('DATABASE_URL', 'sqlite:///test.db')
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///test.db').replace("postgres://", "postgresql://")
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
