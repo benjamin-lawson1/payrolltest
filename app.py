@@ -58,6 +58,13 @@ class History(db.Model):
     end = db.Column(db.DateTime, nullable = True)
     report = db.Column(db.String(300), unique=False, nullable=True)
 
+# . . . add db: Users (id, name, email, pin)
+class PastActions(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    time = db.Column(db.DateTime)
+    action = db.Column(db.String(500), nullable=False)
+
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Create Routes
 
 
@@ -105,11 +112,17 @@ def home(user_pin,selected_user=None):
     # . . . show admin page
     if user_pin == admin_pin:
         users = Users.query.all()
+        history = PastActions.query.order_by(PastActions.time.desc()).all()
         random_pin = random.randint(1000, 9999)
-        return render_template('admin.html',users=users,user_pin=user_pin,greeting=greeting,random_pin=random_pin)
+        add_to_record("The admin has been viewed.")
+
+        return render_template('admin.html',users=users,user_pin=user_pin,greeting=greeting,random_pin=random_pin,history=history)
 
     # . . . show managers page
     elif user_pin == manager_pin:
+
+        add_to_record("The manager's page has been viewed.")
+
         return manager(selected_user)
     
     # . . . show user page
@@ -123,7 +136,12 @@ def home(user_pin,selected_user=None):
                 current_user.confirmed = 1
                 db.session.commit()
                 confirmed = 1
+
+                add_to_record(user_name + "'s account has been confirmed.")
+
+                #. . . Alert Admin
                 executor.submit(send_text,'8433430072@tmomail.net','Account Confirmed',user_name + ' has confirmed their account.')
+            
             else:
                 confirmed = 0
 
@@ -149,6 +167,11 @@ def home(user_pin,selected_user=None):
             except:
                 clock_status = clock_in_text
 
+            #. . . Add to records
+            action = user_name + " account viewed."
+            db.session.add(PastActions(time = datetime.now(),action = action))
+            db.session.commit()
+
             # . . display
             return render_template('user.html',user=user_name,history=all_history,clock_status=clock_status,user_pin=user_pin,greeting=greeting,clock_in_text=clock_in_text,clock_out_text=clock_out_text,confirmed=confirmed)
         
@@ -173,6 +196,8 @@ def clock_action():
             new_record = History(name = user_name,start = time_now, end = time_now, report='')
             db.session.add(new_record)
             db.session.commit()
+             
+            add_to_record(user_name + " has clocked in.")
 
             # . . . Notify user
             subject = "You've Clocked In"
@@ -191,6 +216,8 @@ def clock_action():
             most_recent_record.end = time_now
             most_recent_record.report = report
             db.session.commit()
+
+            add_to_record(user_name + " has clocked out.")
 
             # . . . send to user
             subject = "You've Clocked Out"
@@ -266,6 +293,8 @@ def commit_record():
             record_to_update.end = new_end_time
             db.session.commit()
 
+            add_to_record(current_user + " has modified their working history on " + date + " from " + old_start_time + " - " + old_end_time + " to " + new_start + " - " + new_end + " due to the following reason: " + reason + ".")
+
             #. . . set messages for notifications
             user_change_manager_subject = current_user + " has modified their working history."
             user_change_manager_body = current_user + " has modified their working history on " + date + " from " + old_start_time + " - " + old_end_time + " to " + new_start + " - " + new_end + " due to the following reason: " + reason + "."
@@ -284,6 +313,8 @@ def commit_record():
             record_to_delete = History.query.get_or_404(id)
             db.session.delete(record_to_delete)
             db.session.commit()
+
+            add_to_record(current_user + " has deleted their working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + ".")
 
             # . . . set messages for notifications
             user_change_manager_subject = current_user + " has deleted their working history."
@@ -352,6 +383,8 @@ def create_user():
             url = "https://kigpayroll.herokuapp.com/" + pin
             body = "You may access your account by clicking on the link below: \n" + url + "\n \n Please start using this app to clock in starting Monday, March 13th. Thank you, Benjamin. "
             print("email: " + email + " subject: " + subject + " body: " + body)
+
+            add_to_record("A new account has been created for " + name + ".")
             
             executor.submit(send_text,email,subject,body)
             
@@ -387,6 +420,8 @@ def delete_user(user_id):
     db.session.delete(user_to_delete)
     db.session.commit()
 
+    add_to_record(name_to_delete + " 's account has been deleted.")
+
     # . . . refresh
     return redirect(url_for('home', user_pin=admin_pin))
 
@@ -412,6 +447,8 @@ def edit_user(user_name=None,user_email=None):
             record_to_update.name = new_name
             db.session.commit()
 
+        add_to_record(old_name + "'s account has been updated to " + new_name + " (" + new_email + ")")
+
         return home(user_pin=admin_pin)
     
     # . . . refresh
@@ -436,6 +473,9 @@ def manager(selected_user=None):
 def manager_select_user():
     if request.method == 'POST':
         selected_user = request.form['selected_user']
+
+        add_to_record("The manager has viewed " + selected_user + "'s work history.")
+
         return manager(selected_user)
     else:
         pass
@@ -458,9 +498,16 @@ def export_csv_action():
     response.headers['Content-Disposition'] = 'attachment; filename=all_history.csv'
     response.headers['Content-type'] = 'text/csv'
 
+    add_to_record("Work history has been exported.")
+
     return response
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Functions
+
+# add to records
+def add_to_record(action):
+    db.session.add(PastActions(time = datetime.now(),action = action))
+    db.session.commit()
 
 # send texts
 def send_text(email,subject,body):

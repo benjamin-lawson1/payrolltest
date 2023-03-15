@@ -61,6 +61,20 @@
 	{% endfor %}
     
 </table>
+
+<table>
+    <tr>
+         <th>Time</th>
+         <th>Action</th>
+    </tr>
+    {% for record in history %}
+    <tr>
+         <td>{{ record.time }}</td>
+         <td>{{ record.action }}</td>
+    </tr>
+    {% endfor %}
+ </table>
+
 {% endblock %}
 
 
