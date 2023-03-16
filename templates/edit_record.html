@@ -6,7 +6,7 @@
 
 {% block body %}
 <div id="user-greeting">
-    Modify your record on {{ date }} or press "back" to return.
+    Modify your record or press "back" to return.
 </div>
 <div id="modify-time">
 </div>
@@ -22,6 +22,10 @@
     <div>
         <form>
         <table>
+            <tr>
+                <td><label for="new_start_time"> Update Date: </label></td>
+                <td><input class="input" type="date" name="new_date" value="{{ date.strftime('%Y-%m-%d') }}"></td>
+            </tr>
             <tr>
                 <td><label for="new_start_time"> Update Start Time: </label></td>
                 <td><input class="input" type="time" name="new_start_time" value="{{start_time}}"></td>

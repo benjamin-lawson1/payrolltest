@@ -70,7 +70,7 @@ class PastActions(db.Model):
 
 @app.route("/")
 def testing():
-    return "Hello!"
+    return "Welcome! Enter your pin into the URL to find the page you want."
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
 @app.route("/<int:user_pin>")
 def home(user_pin,selected_user=None):
@@ -240,7 +240,8 @@ def clock_action():
 @app.route("/edit_record/<int:id>/<string:date>/<string:start_time>/<string:end_time>/<int:user_pin>/<string:selected_user>")
 @app.route("/edit_record/<int:id>/<string:date>/<string:start_time>/<string:end_time>/<int:user_pin>")
 def edit_record(id,date,start_time,end_time,user_pin,selected_user=None):
-    return render_template('edit_record.html',id=id,date=date,start_time=start_time,end_time=end_time,user_pin=user_pin,selected_user=selected_user)
+    date_object = datetime.strptime(date, '%b %d, %Y')
+    return render_template('edit_record.html',id=id,date=date_object,start_time=start_time,end_time=end_time,user_pin=user_pin,selected_user=selected_user)
     
 # commit update
 @app.route("/commit_record",methods=['GET','POST'])
@@ -249,7 +250,9 @@ def commit_record():
         
         #. . . collect variables from form
         id = request.form['id']
-        date = request.form['date']
+        post_date = request.form['date']
+        post_new_date = request.form['new_date']
+        date = datetime.strptime(request.form['new_date'], '%Y-%m-%d')
         delete = request.form.get('delete','not_selected')
         user_pin = int(request.form['user_pin'])
         selected_user = request.form['selected_user']
@@ -284,27 +287,28 @@ def commit_record():
             new_end = request.form['new_end_time']
 
             # . . . convert string back into a date time object
-            new_start_time = datetime.strptime(date + " " + new_start,'%b %d, %Y %H:%M')
-            new_end_time = datetime.strptime(date + " " + new_end,'%b %d, %Y %H:%M')
+            new_start_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_start,'%b %d, %Y %H:%M')
+            new_end_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_end,'%b %d, %Y %H:%M')
 
             # . . . update record
             record_to_update = History.query.get_or_404(id)
             record_to_update.start = new_start_time
             record_to_update.end = new_end_time
             db.session.commit()
-
-            add_to_record(current_user + " has modified their working history on " + date + " from " + old_start_time + " - " + old_end_time + " to " + new_start + " - " + new_end + " due to the following reason: " + reason + ".")
+            
+            reason_string = post_date + " (" + old_start_time + " - " + old_end_time + ") to " + post_new_date + "(" + new_start + " - " + new_end + ") due to the following reason: " + reason + "."
+            add_to_record(current_user + " has modified their working history from " + reason_string)
 
             #. . . set messages for notifications
             user_change_manager_subject = current_user + " has modified their working history."
-            user_change_manager_body = current_user + " has modified their working history on " + date + " from " + old_start_time + " - " + old_end_time + " to " + new_start + " - " + new_end + " due to the following reason: " + reason + "."
+            user_change_manager_body = current_user + " has modified their working history on " + reason_string
             user_change_user_subject = "You have modified your working history."
-            user_change_user_body = "You've modified your working history on " + date + " from " + old_start_time + " - " + old_end_time + " to " + new_start + " - " + new_end + " due to the following reason: " + reason + "."
+            user_change_user_body = "You've modified your working history on " + reason_string
             
             manager_change_manager_subject = "You have modified " + current_user + "'s working history."
-            manager_change_manager_body = "You have modified " + current_user + "'s working history on " + date + " from " + old_start_time + " - " + old_end_time + " to " + new_start + " - " + new_end + " due to the following reason: " + reason + "."
+            manager_change_manager_body = "You have modified " + current_user + "'s working history on " + reason_string
             manager_change_user_subject = manager_name + " has modified your working history."
-            manager_change_user_body = manager_name + " has modified your working history on " + date + " from " + old_start_time + " - " + old_end_time + " to " + new_start + " - " + new_end + " due to the following reason: " + reason + "."
+            manager_change_user_body = manager_name + " has modified your working history on " + reason_string
         
 
         # . . . Delete Record
