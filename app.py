@@ -2,6 +2,7 @@
 
 # . . . import Flask
 from flask import Flask, render_template, request, redirect, url_for, make_response
+import datetime as dt
 from datetime import datetime
 import random
 from flask_migrate import Migrate
@@ -67,10 +68,52 @@ class PastActions(db.Model):
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Create Routes
 
+global start_date
+# find monday
+today = dt.date.today()
+monday = today - dt.timedelta(days=today.weekday())
+start_date = dt.datetime.combine(monday, dt.time.min)
 
 @app.route("/")
 def testing():
-    return "Welcome! Enter your pin into the URL to find the page you want."
+
+    # ... find users
+    all_users = Users.query.all()
+    user_data = []
+
+    for user in all_users:
+        #  . . . find all user data
+        userTime = History.query.filter_by(name=user.name).filter(History.start > start_date).all()
+
+        # . . . create an empty list to hold the records for this user
+        records = []
+
+        for time in userTime:
+            record = {
+                'name': time.name,
+                'date': time.start.date(),
+                'start': time.start.time(),
+                'end': time.end.time(),
+                'total': time.end - time.start
+            }
+            records.append(record)
+        
+        # . . . calculate total
+        totalHours = 0
+        for record in records:
+            totalHours += record['total'].total_seconds() / 3600
+
+        # . . . add to user data
+        user_data.append({
+            'name': user.name,
+            'total_hours': totalHours
+        })
+    
+    for user in user_data:
+        print(user['name'], user['total_hours'])
+
+    return 'test complete'
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
 @app.route("/<int:user_pin>")
 def home(user_pin,selected_user=None):
@@ -112,7 +155,7 @@ def home(user_pin,selected_user=None):
     # . . . show admin page
     if user_pin == admin_pin:
         users = Users.query.all()
-        history = PastActions.query.order_by(PastActions.time.desc()).all()
+        history = PastActions.query.order_by(PastActions.time.desc()).filter(PastActions.time >= start_date)
         random_pin = random.randint(1000, 9999)
         add_to_record("The admin has been viewed.")
 
@@ -152,7 +195,7 @@ def home(user_pin,selected_user=None):
             clock_out_text = 'End Shift'
 
             # . . . load user history
-            all_history = History.query.filter_by(name=user_name).order_by(History.start.desc()).all()
+            all_history = History.query.filter_by(name=user_name).order_by(History.start.desc()).filter(History.start >= start_date)
             most_recent_record = History.query.filter_by(name=user_name).order_by(History.start.desc()).first()
 
             # . . . find clock status by checking most recent record
@@ -467,7 +510,7 @@ def manager(selected_user=None):
     print(selected_user)
     
     users = Users.query.filter_by(type = 'crew_member').all()
-    user_history = History.query.filter_by(name=selected_user).order_by(History.start.desc()).all()
+    user_history = History.query.filter_by(name=selected_user).order_by(History.start.desc()).filter(History.start >= start_date)
     manager_pin = (Users.query.filter_by(type = 'manager').first()).pin
     
     return render_template('manager.html',users=users,history=user_history,user_pin=manager_pin,selected_user=selected_user,greeting=greeting)
