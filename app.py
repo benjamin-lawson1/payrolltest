@@ -71,8 +71,7 @@ class PastActions(db.Model):
 global start_date
 # find monday
 today = dt.date.today()
-monday = today - dt.timedelta(days=today.weekday())
-start_date = dt.datetime.combine(monday, dt.time.min)
+start_date = dt.datetime.combine(today - dt.timedelta(days=today.weekday()), dt.time.min)
 
 @app.route("/")
 def start():
@@ -119,11 +118,10 @@ def start():
 
         print(userNotification)
 
-        
-    
+
     manager_report = ''
     for user in user_data:
-        manager_report += user['name'] + " - " + str(user['total_hours']) + '<br>'
+        manager_report += user['name'] + " - " + str(user[round('total_hours',1)]) + '<br>'
 
 
     return manager_report
