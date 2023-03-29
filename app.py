@@ -121,7 +121,7 @@ def start():
 
     manager_report = ''
     for user in user_data:
-        manager_report += user['name'] + " - " + str(user[round('total_hours',1)]) + '<br>'
+        manager_report += user['name'] + " - " + str(user['total_hours']) + '<br>'
 
 
     return manager_report
