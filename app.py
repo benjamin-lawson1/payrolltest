@@ -121,7 +121,7 @@ def start():
 
     manager_report = ''
     for user in user_data:
-        manager_report += user['name'] + " - " + str(user['total_hours']) + '<br>'
+        manager_report += user['name'] + " - " + str(round(user['total_hours'],1)) + '<br>'
 
 
     return manager_report
@@ -166,10 +166,9 @@ def home(user_pin,selected_user=None):
 
     # . . . show admin page
     if user_pin == admin_pin:
-        users = Users.query.order_by(id.desc()).all()
+        users = Users.query.all()
         history = PastActions.query.order_by(PastActions.time.desc()).filter(PastActions.time >= start_date)
         random_pin = random.randint(1000, 9999)
-        add_to_record("The admin has been viewed.")
 
         return render_template('admin.html',users=users,user_pin=user_pin,greeting=greeting,random_pin=random_pin,history=history)
 
