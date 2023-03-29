@@ -125,7 +125,7 @@ def start():
 
 
     manager_report_final = 'Hi Shawn, here is your payroll report for this week: <br><br>' + manager_report + '<br><br>Have a great day!'
-    return manager_report
+    return manager_report_final
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
 @app.route("/<int:user_pin>")
