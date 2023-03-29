@@ -75,20 +75,25 @@ monday = today - dt.timedelta(days=today.weekday())
 start_date = dt.datetime.combine(monday, dt.time.min)
 
 @app.route("/")
-def testing():
+def start():
 
     # ... find users
     all_users = Users.query.all()
     user_data = []
 
+    # . . . for each user
     for user in all_users:
-        #  . . . find all user data
+
+        #  . . . find user records
         userTime = History.query.filter_by(name=user.name).filter(History.start > start_date).all()
 
         # . . . create an empty list to hold the records for this user
         records = []
 
+        # . . . for each time record
         for time in userTime:
+
+            #. . . add info to record
             record = {
                 'name': time.name,
                 'date': time.start.date(),
@@ -98,21 +103,30 @@ def testing():
             }
             records.append(record)
         
-        # . . . calculate total
         totalHours = 0
+        userNotification =''
+        # . . . for each record
         for record in records:
+            # . . . sum the total
             totalHours += record['total'].total_seconds() / 3600
+            userNotification += str(record['date']) + " " + str(record['start']) + " " + str(record['end']) + " " + str(record['total'])
 
         # . . . add to user data
         user_data.append({
             'name': user.name,
             'total_hours': totalHours
         })
-    
-    for user in user_data:
-        print(user['name'], user['total_hours'])
 
-    return 'test complete'
+        print(userNotification)
+
+        
+    
+    manager_report = ''
+    for user in user_data:
+        manager_report += user['name'] + " - " + str(user['total_hours']) + '<br>'
+
+
+    return manager_report
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
 @app.route("/<int:user_pin>")
@@ -154,7 +168,7 @@ def home(user_pin,selected_user=None):
 
     # . . . show admin page
     if user_pin == admin_pin:
-        users = Users.query.all()
+        users = Users.query.order_by(id.desc()).all()
         history = PastActions.query.order_by(PastActions.time.desc()).filter(PastActions.time >= start_date)
         random_pin = random.randint(1000, 9999)
         add_to_record("The admin has been viewed.")
