@@ -124,6 +124,7 @@ def start():
         manager_report += user['name'] + " - " + str(round(user['total_hours'],1)) + '<br>'
 
 
+    manager_report_final = 'Hi Shawn, here is your payroll report for this week: <br><br>' + manager_report + '<br><br>Have a great day!'
     return manager_report
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
