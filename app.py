@@ -3,7 +3,7 @@
 # . . . import Flask
 from flask import Flask, render_template, request, redirect, url_for, make_response
 import datetime as dt
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 from flask_migrate import Migrate
 from sqlalchemy import create_engine
@@ -72,60 +72,41 @@ global start_date
 # find monday
 today = dt.date.today()
 start_date = dt.datetime.combine(today - dt.timedelta(days=today.weekday()), dt.time.min)
+end_date = start_date + timedelta(days=6)
 
 @app.route("/")
 def start():
 
     # ... find users
     all_users = Users.query.all()
-    user_data = []
+    user_data = ''
+    manager_report_records = ''
 
     # . . . for each user
     for user in all_users:
+        name = user.name
+        records = ''
+        total = 0
 
         #  . . . find user records
-        userTime = History.query.filter_by(name=user.name).filter(History.start > start_date).all()
+        user_records = History.query.filter_by(name=name).filter(History.start > start_date).all()
 
-        # . . . create an empty list to hold the records for this user
-        records = []
+        for record in user_records:
+            try: 
+                records += str(record.start.strftime('%a')) + ': ' + str(record.start.strftime('%I:%M %p')) + " - " + str(record.end.strftime('%I:%M %p')) + " | " + str(round((record.end - record.start).total_seconds() / 3600,1)) + " hour(s) <br>"
+                total += round((record.end - record.start).total_seconds() / 3600,1)
+            except:
+                print('error')
 
-        # . . . for each time record
-        for time in userTime:
-
-            #. . . add info to record
-            record = {
-                'name': time.name,
-                'date': time.start.date(),
-                'start': time.start.time(),
-                'end': time.end.time(),
-                'total': time.end - time.start
-            }
-            records.append(record)
+        user_message = 'Hi ' + name + ', here are your working hours for this week: ' +  str(start_date.strftime('%m/%d/%Y')) + " - " + str(end_date.strftime('%m/%d/%Y')) + '<br><br>' + records + '<br>' + 'In total, you worked ' + str(total) + ' hours this week. <br> <br>'
+        manager_report_records += name + ' - ' + str(total) + '<br>'
+        # now find email of user and send email here
         
-        totalHours = 0
-        userNotification =''
-        # . . . for each record
-        for record in records:
-            # . . . sum the total
-            totalHours += record['total'].total_seconds() / 3600
-            userNotification += str(record['date']) + " " + str(record['start']) + " " + str(record['end']) + " " + str(record['total'])
-
-        # . . . add to user data
-        user_data.append({
-            'name': user.name,
-            'total_hours': totalHours
-        })
-
-        
-
-
-    manager_report = ''
-    for user in user_data:
-        manager_report += user['name'] + " - " + str(round(user['total_hours'],1)) + '<br>'
-
-
-    manager_report_final = 'Hi Shawn, here is your payroll report for this week: <br><br>' + manager_report + '<br>Have a great day!'
-    return manager_report_final
+        user_data += user_message
+    
+    manager_report = 'Hi Shawn, here is your payroll report:<br><br>' + manager_report_records + '<br> Have a great day!'
+    final_message = user_data + '<br><br>' + manager_report
+    return final_message
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
 @app.route("/<int:user_pin>")
