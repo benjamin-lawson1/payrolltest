@@ -6,7 +6,7 @@ import datetime as dt
 from datetime import datetime, timedelta
 import random
 from flask_migrate import Migrate
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine,distinct, func
 
 # . . . import ability to perform background tasks
 from concurrent.futures import ThreadPoolExecutor
@@ -68,45 +68,79 @@ class PastActions(db.Model):
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Create Routes
 
-global start_date
-# find monday
-today = dt.date.today()
-start_date = dt.datetime.combine(today - dt.timedelta(days=today.weekday()), dt.time.min)
-end_date = start_date + timedelta(days=6)
+# create global variables
+global start_date, end_date
+
+start_date = dt.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - dt.timedelta(days=dt.datetime.now().weekday())
+end_date = start_date + dt.timedelta(days=6)
 
 @app.route("/")
-def start():
+def website_load():
 
     # ... find users
-    all_users = Users.query.all()
-    user_data = ''
+    crew_members = Users.query.all()
+    website_output = ''
     manager_report_records = ''
 
     # . . . for each user
-    for user in all_users:
-        name = user.name
-        records = ''
-        total = 0
+    for crew_member in crew_members:
+        crew_member_name = crew_member.name
+        crew_member_records = ''
+        crew_member_weekly_summary_list = ''
+        crew_member_weekly_hour_total = 0
+        days = []
 
         #  . . . find user records
-        user_records = History.query.filter_by(name=name).filter(History.start > start_date).all()
+        crew_member_working_records = History.query.filter_by(name=crew_member_name).filter(History.start > start_date).all()
 
-        for record in user_records:
+        for record in crew_member_working_records:
             try: 
-                records += str(record.start.strftime('%a')) + ': ' + str(record.start.strftime('%I:%M %p')) + " - " + str(record.end.strftime('%I:%M %p')) + " | " + str(round((record.end - record.start).total_seconds() / 3600,1)) + " hour(s) <br>"
-                total += round((record.end - record.start).total_seconds() / 3600,1)
+                # . . . collect data
+                day = str(record.start.strftime('%a'))
+                record_start_time = str(record.start.strftime('%I:%M %p'))
+                record_end_time = str(record.end.strftime('%I:%M %p'))
+                record_time_total = round((record.end - record.start).total_seconds() / 3600,1)
+                record_time_total_string = str(record_time_total)
+                
+                # . . . compile message: Mon: 9:30AM - 10:30AM | 1 hour(s)
+                compiled_record = day + ': ' + record_start_time + " - " + record_end_time + " | " + record_time_total_string + " hour(s) <br>"
+
+                # . . . add message to records
+                crew_member_records += compiled_record
+                crew_member_weekly_hour_total += record_time_total
+
+                # . . . add day to days
+                days.append(day)
+
             except:
                 print('error')
-
-        user_message = 'Hi ' + name + ', here are your working hours for this week: ' +  str(start_date.strftime('%m/%d/%Y')) + " - " + str(end_date.strftime('%m/%d/%Y')) + '<br><br>' + records + '<br>' + 'In total, you worked ' + str(total) + ' hours this week. <br> <br>'
-        manager_report_records += name + ' - ' + str(total) + '<br>'
-        # now find email of user and send email here
         
-        user_data += user_message
+        start_of_working_week = str(start_date.strftime('%m/%d/%Y'))
+        end_of_working_week = str(end_date.strftime('%m/%d/%Y'))
+        crew_member_weekly_hour_total_string = str(crew_member_weekly_hour_total)
+        crew_member_email = (Users.query.filter_by(name=crew_member_name).first()).email
+        crew_member_number_working_days = len(set(days))
+
+        # . . . compile message: Hi Jessica, here are your working hours for this week(1/1/2023 - 1/7/2023): ... in total, you worked 14 hours this week.
+        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here are your working hours for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + crew_member_weekly_hour_total_string + ' hours this week. <br> <br> This will be send to '+ crew_member_email + ' on ' + str(end_date)
+        
+
+        # . . . compile crew member weekly summary for manager report: Jessica - 15 hours
+        crew_member_weekly_summary_record = crew_member_name + ' - ' + str(crew_member_weekly_hour_total) + 'hour(s) | ' + str(crew_member_number_working_days) + ' working day(s)' 
+        crew_member_weekly_summary_list += crew_member_weekly_summary_record
+
+        # . . . email crew member here
+        if crew_member_weekly_hour_total > 0:
+            website_output += crew_member_compiled_message
+        else:
+            pass
+        
     
-    manager_report = 'Hi Shawn, here is your payroll report:<br><br>' + manager_report_records + '<br> Have a great day!'
-    final_message = user_data + '<br><br>' + manager_report
-    return final_message
+    manager_report = 'Hi Shawn, here is your payroll report:<br>' + crew_member_weekly_summary_list + '<br> Have a great day!'
+    website_output += manager_report
+
+    return website_output
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
 @app.route("/<int:user_pin>")
@@ -149,7 +183,7 @@ def home(user_pin,selected_user=None):
     # . . . show admin page
     if user_pin == admin_pin:
         users = Users.query.all()
-        history = PastActions.query.order_by(PastActions.time.desc()).filter(PastActions.time >= start_date)
+        history = PastActions.query.order_by(PastActions.time.desc()).filter(PastActions.time >= work_week_start)
         random_pin = random.randint(1000, 9999)
 
         return render_template('admin.html',users=users,user_pin=user_pin,greeting=greeting,random_pin=random_pin,history=history)
@@ -188,7 +222,7 @@ def home(user_pin,selected_user=None):
             clock_out_text = 'End Shift'
 
             # . . . load user history
-            all_history = History.query.filter_by(name=user_name).order_by(History.start.desc()).filter(History.start >= start_date)
+            all_history = History.query.filter_by(name=user_name).order_by(History.start.desc()).filter(History.start >= work_week_start)
             most_recent_record = History.query.filter_by(name=user_name).order_by(History.start.desc()).first()
 
             # . . . find clock status by checking most recent record
@@ -503,7 +537,7 @@ def manager(selected_user=None):
     print(selected_user)
     
     users = Users.query.filter_by(type = 'crew_member').all()
-    user_history = History.query.filter_by(name=selected_user).order_by(History.start.desc()).filter(History.start >= start_date)
+    user_history = History.query.filter_by(name=selected_user).order_by(History.start.desc()).filter(History.start >= work_week_start)
     manager_pin = (Users.query.filter_by(type = 'manager').first()).pin
     
     return render_template('manager.html',users=users,history=user_history,user_pin=manager_pin,selected_user=selected_user,greeting=greeting)
