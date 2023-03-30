@@ -521,13 +521,16 @@ def export_csv_action():
 """
 def schedule_automated_weekly_report():
     s = sched.scheduler(time.time, time.sleep)
-    next_run_time = datetime.now().replace(hour=3, minute=0, second=0, microsecond=0) + timedelta(days=(7 - datetime.now().weekday()))
-    s.enterabs(next_run_time.timestamp(), 1, test_send, ())
+    next_run_time = datetime.now().replace(hour=23, minute=0, second=0, microsecond=0)
+    if next_run_time.weekday() != 6:  # Sunday is weekday number 6
+        days_to_sunday = (6 - next_run_time.weekday()) % 7
+        next_run_time += timedelta(days=days_to_sunday)
+    s.enterabs(next_run_time.timestamp(), 1, send_weekly_report, ())
     s.run()
 """
 def schedule_automated_weekly_report():
     s = sched.scheduler(time.time, time.sleep)
-    next_run_time = datetime.now().replace(hour=1, minute=30, second=0, microsecond=0)
+    next_run_time = datetime.now().replace(hour=1, minute=28, second=0, microsecond=0)
     if next_run_time.weekday() != 3:
         days_to_thursday = (3 - next_run_time.weekday()) % 7
         next_run_time += timedelta(days=days_to_thursday)
