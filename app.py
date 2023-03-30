@@ -519,7 +519,7 @@ def export_csv_action():
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Functions
 
 
-def schedule_function():
+def schedule_automated_weekly_report():
     s = sched.scheduler(time.time, time.sleep)
     next_run_time = datetime.now().replace(hour=3, minute=0, second=0, microsecond=0) + timedelta(days=(7 - datetime.now().weekday()))
     s.enterabs(next_run_time.timestamp(), 1, send_weekly_report, ())
@@ -590,7 +590,6 @@ def send_weekly_report():
     manager_report_header = 'Crew Working Hours for week of ' + start_of_working_week + ' - ' + end_of_working_week
     send_text(manager_email,manager_report_header,manager_report_body)
 
-
 # add to records
 def add_to_record(action):
     db.session.add(PastActions(time = datetime.now(),action = action))
@@ -634,4 +633,5 @@ with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
+    schedule_automated_weekly_report()
     app.run(debug=True)
