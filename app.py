@@ -523,12 +523,12 @@ def test_send():
 
 s = sched.scheduler(time.time, time.sleep)
 
-next_run_time = datetime.now().replace(hour=1, minute=5, second=0, microsecond=0)
+next_run_time = datetime.now().replace(hour=1, minute=8, second=0, microsecond=0)
 if next_run_time.weekday() != 3:
     days_to_thursday = (3 - next_run_time.weekday()) % 7
     next_run_time += timedelta(days=days_to_thursday)
 
-s.enterabs(next_run_time.timestamp(), 1, test_send(), ())
+s.enterabs(next_run_time.timestamp(), 1, test_send, ())
 s.run()
 
 
