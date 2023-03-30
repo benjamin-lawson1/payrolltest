@@ -122,15 +122,16 @@ def website_load():
         crew_member_number_working_days = len(set(days))
 
         # . . . compile message: Hi Jessica, here are your working hours for this week(1/1/2023 - 1/7/2023): ... in total, you worked 14 hours this week.
-        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here are your working hours for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + crew_member_weekly_hour_total_string + ' hours this week. <br> <br> This will be send to '+ crew_member_email + ' on ' + str(end_date)
+        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here are your working hours for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + crew_member_weekly_hour_total_string + ' hours this week. <br> <br> This will be send to '+ crew_member_email + ' on ' + str(end_date) + '<br><br>'
         
 
         # . . . compile crew member weekly summary for manager report: Jessica - 15 hours
         crew_member_weekly_summary_record = crew_member_name + ' - ' + str(crew_member_weekly_hour_total) + 'hour(s) | ' + str(crew_member_number_working_days) + ' working day(s)' 
         crew_member_weekly_summary_list += crew_member_weekly_summary_record
 
-        # . . . email crew member here
+        
         if crew_member_weekly_hour_total > 0:
+            # . . . email crew member here
             website_output += crew_member_compiled_message
         else:
             pass
