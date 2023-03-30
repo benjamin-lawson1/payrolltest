@@ -2,6 +2,8 @@
 
 # . . . import Flask
 from flask import Flask, render_template, request, redirect, url_for, make_response
+import sched
+import time
 import datetime as dt
 from datetime import datetime, timedelta
 import random
@@ -68,6 +70,7 @@ class PastActions(db.Model):
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Create Routes
 
+
 # create global variables
 global start_date, end_date
 
@@ -76,71 +79,7 @@ end_date = start_date + dt.timedelta(days=6)
 
 @app.route("/")
 def website_load():
-
-    # ... find users
-    crew_members = Users.query.all()
-    website_output = ''
-    crew_member_weekly_summary_list = ''
-
-    # . . . for each user
-    for crew_member in crew_members:
-        crew_member_name = crew_member.name
-        crew_member_records = ''
-        crew_member_weekly_hour_total = 0
-        days = []
-
-        #  . . . find user records
-        crew_member_working_records = History.query.filter_by(name=crew_member_name).filter(History.start > start_date).all()
-
-        for record in crew_member_working_records:
-            try: 
-                # . . . collect data
-                day = str(record.start.strftime('%a'))
-                record_start_time = str(record.start.strftime('%I:%M %p'))
-                record_end_time = str(record.end.strftime('%I:%M %p'))
-                record_time_total = round((record.end - record.start).total_seconds() / 3600,1)
-                record_time_total_string = str(record_time_total)
-                
-                # . . . compile message: Mon: 9:30AM - 10:30AM | 1 hour(s)
-                compiled_record = day + ': ' + record_start_time + " - " + record_end_time + " | " + record_time_total_string + " hour(s) <br>"
-
-                # . . . add message to records
-                crew_member_records += compiled_record
-                crew_member_weekly_hour_total += record_time_total
-
-                # . . . add day to days
-                days.append(day)
-
-            except:
-                print('error')
-        
-        start_of_working_week = str(start_date.strftime('%m/%d/%Y'))
-        end_of_working_week = str(end_date.strftime('%m/%d/%Y'))
-        crew_member_weekly_hour_total_string = str(crew_member_weekly_hour_total)
-        crew_member_email = (Users.query.filter_by(name=crew_member_name).first()).email
-        crew_member_number_working_days = len(set(days))
-
-        # . . . compile message: Hi Jessica, here are your working hours for this week(1/1/2023 - 1/7/2023): ... in total, you worked 14 hours this week.
-        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here are your working report for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + str(crew_member_number_working_days) + ' day(s), for a total of ' + crew_member_weekly_hour_total_string + ' hour(s) this week. <br> <br> This will be send to '+ crew_member_email + ' on ' + str(end_date) + '<br> - - - <br>'
-        
-
-        # . . . compile crew member weekly summary for manager report: Jessica - 15 hours
-        crew_member_weekly_summary_record = crew_member_name + ' - ' + str(crew_member_weekly_hour_total) + ' hour(s) | ' + str(crew_member_number_working_days) + ' working day(s) <br>' 
-        
-
-        
-        if crew_member_weekly_hour_total > 0:
-            # . . . email crew member here
-            crew_member_weekly_summary_list += crew_member_weekly_summary_record
-            website_output += crew_member_compiled_message
-        else:
-            pass
-        
-    
-    manager_report = 'Hi Shawn, here is your payroll report:<br>' + crew_member_weekly_summary_list + '<br> Have a great day!'
-    website_output += manager_report
-
-    return website_output
+    return 'no pin entered.'
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
@@ -578,6 +517,91 @@ def export_csv_action():
     return response
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Functions
+
+s = sched.scheduler(time.time, time.sleep)
+
+next_run_time = datetime.now().replace(hour=1, minute=5, second=0, microsecond=0)
+if next_run_time.weekday() != 3:
+    days_to_thursday = (3 - next_run_time.weekday()) % 7
+    next_run_time += timedelta(days=days_to_thursday)
+
+s.enterabs(next_run_time.timestamp(), 1, test_send(), ())
+s.run()
+
+def test_send():
+    send_text('benjaminlawson4@gmail.com','test','test')
+
+def schedule_function():
+    s = sched.scheduler(time.time, time.sleep)
+    next_run_time = datetime.now().replace(hour=3, minute=0, second=0, microsecond=0) + timedelta(days=(7 - datetime.now().weekday()))
+    s.enterabs(next_run_time.timestamp(), 1, send_weekly_report, ())
+    s.run()
+
+def send_weekly_report():
+
+    # ... find users
+    crew_members = Users.query.all()
+    crew_member_weekly_summary_list = ''
+
+    # . . . for each user
+    for crew_member in crew_members:
+        crew_member_name = crew_member.name
+        crew_member_records = ''
+        crew_member_weekly_hour_total = 0
+        days = []
+
+        #  . . . find user records
+        crew_member_working_records = History.query.filter_by(name=crew_member_name).filter(History.start > start_date).all()
+
+        for record in crew_member_working_records:
+            try: 
+                # . . . collect data
+                day = str(record.start.strftime('%a'))
+                record_start_time = str(record.start.strftime('%I:%M %p'))
+                record_end_time = str(record.end.strftime('%I:%M %p'))
+                record_time_total = round((record.end - record.start).total_seconds() / 3600,1)
+                record_time_total_string = str(record_time_total)
+                
+                # . . . compile message: Mon: 9:30AM - 10:30AM | 1 hour(s)
+                compiled_record = day + ': ' + record_start_time + " - " + record_end_time + " | " + record_time_total_string + " hour(s) <br>"
+
+                # . . . add message to records
+                crew_member_records += compiled_record
+                crew_member_weekly_hour_total += record_time_total
+
+                # . . . add day to days
+                days.append(day)
+
+            except:
+                print('error')
+        
+        start_of_working_week = str(start_date.strftime('%m/%d/%Y'))
+        end_of_working_week = str(end_date.strftime('%m/%d/%Y'))
+        crew_member_weekly_hour_total_string = str(crew_member_weekly_hour_total)
+        crew_member_email = (Users.query.filter_by(name=crew_member_name).first()).email
+        crew_member_number_working_days = len(set(days))
+
+        # . . . compile message: Hi Jessica, here are your working hours for this week(1/1/2023 - 1/7/2023): ... in total, you worked 14 hours this week.
+        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here are your working report for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + str(crew_member_number_working_days) + ' day(s), for a total of ' + crew_member_weekly_hour_total_string + ' hour(s) this week. '
+        
+
+        # . . . compile crew member weekly summary for manager report: Jessica - 15 hours
+        crew_member_weekly_summary_record = crew_member_name + ' - ' + str(crew_member_weekly_hour_total) + ' hour(s) | ' + str(crew_member_number_working_days) + ' working day(s) <br>' 
+        
+
+        
+        if crew_member_weekly_hour_total > 0:
+            send_text(crew_member_email,"Your Weekly Working Report",crew_member_compiled_message)
+            crew_member_weekly_summary_list += crew_member_weekly_summary_record
+        else:
+            pass
+        
+    # . . . email manager here
+    manager_email = 'benjamin@kiawahislandgetaways.com'
+    manager_report_body = 'Hi Shawn, here is your payroll report:<br>' + crew_member_weekly_summary_list + '<br> Have a great day!'
+    manager_report_header = 'Crew Working Hours for week of ' + start_of_working_week + ' - ' + end_of_working_week
+    send_text(manager_email,manager_report_header,manager_report_body)
+
 
 # add to records
 def add_to_record(action):
