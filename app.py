@@ -518,7 +518,6 @@ def export_csv_action():
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Functions
 
-"""
 def schedule_automated_weekly_report():
     s = sched.scheduler(time.time, time.sleep)
     next_run_time = datetime.now().replace(hour=23, minute=0, second=0, microsecond=0)
@@ -527,24 +526,13 @@ def schedule_automated_weekly_report():
         next_run_time += timedelta(days=days_to_sunday)
     s.enterabs(next_run_time.timestamp(), 1, send_weekly_report, ())
     s.run()
-"""
-def schedule_automated_weekly_report():
-    s = sched.scheduler(time.time, time.sleep)
-    next_run_time = datetime.now().replace(hour=1, minute=28, second=0, microsecond=0)
-    if next_run_time.weekday() != 3:
-        days_to_thursday = (3 - next_run_time.weekday()) % 7
-        next_run_time += timedelta(days=days_to_thursday)
-    s.enterabs(next_run_time.timestamp(), 1, test_send, ())
-    s.run()
-
-def test_send():
-    send_text('benjamin@kiawahislandgetaways.com',"test","test")
 
 def send_weekly_report():
 
     # ... find users
     crew_members = Users.query.all()
     crew_member_weekly_summary_list = ''
+    website_output = ''
 
     # . . . for each user
     for crew_member in crew_members:
@@ -594,16 +582,20 @@ def send_weekly_report():
 
         
         if crew_member_weekly_hour_total > 0:
+            website_output += crew_member_email
             send_text(crew_member_email,"Your Weekly Working Report",crew_member_compiled_message)
             crew_member_weekly_summary_list += crew_member_weekly_summary_record
         else:
             pass
         
     # . . . email manager here
-    manager_email = 'benjamin@kiawahislandgetaways.com'
+    manager_email = 'shawn@kiawahislandgetaways.com'
     manager_report_body = 'Hi Shawn, here is your payroll report:<br>' + crew_member_weekly_summary_list + '<br> Have a great day!'
     manager_report_header = 'Crew Working Hours for week of ' + start_of_working_week + ' - ' + end_of_working_week
     send_text(manager_email,manager_report_header,manager_report_body)
+    
+    website_output += manager_report_body
+    send_text("benjamin@kiawahislandgetaways.com","weekly report has been sent",website_output)
 
 # add to records
 def add_to_record(action):
