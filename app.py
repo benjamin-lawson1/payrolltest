@@ -6,7 +6,7 @@ import datetime as dt
 from datetime import datetime, timedelta
 import random
 from flask_migrate import Migrate
-from sqlalchemy import create_engine,distinct, func
+from sqlalchemy import create_engine
 
 # . . . import ability to perform background tasks
 from concurrent.futures import ThreadPoolExecutor
@@ -122,7 +122,7 @@ def website_load():
         crew_member_number_working_days = len(set(days))
 
         # . . . compile message: Hi Jessica, here are your working hours for this week(1/1/2023 - 1/7/2023): ... in total, you worked 14 hours this week.
-        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here are your working hours for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + crew_member_weekly_hour_total_string + ' hours this week. <br> <br> This will be send to '+ crew_member_email + ' on ' + str(end_date) + '<br><br>'
+        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here are your working hours for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + crew_member_weekly_hour_total_string + ' hours this week. <br> <br> This will be send to '+ crew_member_email + ' on ' + str(end_date) + '<br> - - - <br>'
         
 
         # . . . compile crew member weekly summary for manager report: Jessica - 15 hours
