@@ -72,10 +72,10 @@ class PastActions(db.Model):
 
 
 # create global variables
-global start_date, end_date
+global work_week_start, work_week_end
 
-start_date = dt.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - dt.timedelta(days=dt.datetime.now().weekday())
-end_date = start_date + dt.timedelta(days=6)
+work_week_start = dt.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - dt.timedelta(days=dt.datetime.now().weekday())
+work_week_end = work_week_start + dt.timedelta(days=6)
 
 @app.route("/")
 def website_load():
@@ -518,12 +518,24 @@ def export_csv_action():
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Functions
 
-
+"""
 def schedule_automated_weekly_report():
     s = sched.scheduler(time.time, time.sleep)
     next_run_time = datetime.now().replace(hour=3, minute=0, second=0, microsecond=0) + timedelta(days=(7 - datetime.now().weekday()))
-    s.enterabs(next_run_time.timestamp(), 1, send_weekly_report, ())
+    s.enterabs(next_run_time.timestamp(), 1, test_send, ())
     s.run()
+"""
+def schedule_automated_weekly_report():
+    s = sched.scheduler(time.time, time.sleep)
+    next_run_time = datetime.now().replace(hour=1, minute=30, second=0, microsecond=0)
+    if next_run_time.weekday() != 3:
+        days_to_thursday = (3 - next_run_time.weekday()) % 7
+        next_run_time += timedelta(days=days_to_thursday)
+    s.enterabs(next_run_time.timestamp(), 1, test_send, ())
+    s.run()
+
+def test_send():
+    send_text('benjamin@kiawahislandgetaways.com',"test","test")
 
 def send_weekly_report():
 
@@ -539,7 +551,7 @@ def send_weekly_report():
         days = []
 
         #  . . . find user records
-        crew_member_working_records = History.query.filter_by(name=crew_member_name).filter(History.start > start_date).all()
+        crew_member_working_records = History.query.filter_by(name=crew_member_name).filter(History.start > work_week_start).all()
 
         for record in crew_member_working_records:
             try: 
@@ -563,8 +575,8 @@ def send_weekly_report():
             except:
                 print('error')
         
-        start_of_working_week = str(start_date.strftime('%m/%d/%Y'))
-        end_of_working_week = str(end_date.strftime('%m/%d/%Y'))
+        start_of_working_week = str(work_week_start.strftime('%m/%d/%Y'))
+        end_of_working_week = str(work_week_end.strftime('%m/%d/%Y'))
         crew_member_weekly_hour_total_string = str(crew_member_weekly_hour_total)
         crew_member_email = (Users.query.filter_by(name=crew_member_name).first()).email
         crew_member_number_working_days = len(set(days))
