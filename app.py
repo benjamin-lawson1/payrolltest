@@ -518,6 +518,9 @@ def export_csv_action():
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Functions
 
+def test_send():
+    send_text('benjaminlawson4@gmail.com','test','test')
+
 s = sched.scheduler(time.time, time.sleep)
 
 next_run_time = datetime.now().replace(hour=1, minute=5, second=0, microsecond=0)
@@ -528,8 +531,6 @@ if next_run_time.weekday() != 3:
 s.enterabs(next_run_time.timestamp(), 1, test_send(), ())
 s.run()
 
-def test_send():
-    send_text('benjaminlawson4@gmail.com','test','test')
 
 def schedule_function():
     s = sched.scheduler(time.time, time.sleep)
