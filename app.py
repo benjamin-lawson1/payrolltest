@@ -535,7 +535,7 @@ def export_csv_action():
     return response
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Functions
-
+"""
 def schedule_automated_weekly_report():
     s = sched.scheduler(time.time, time.sleep)
     next_run_time = datetime.now().replace(hour=23, minute=0, second=0, microsecond=0)
@@ -544,6 +544,7 @@ def schedule_automated_weekly_report():
         next_run_time += timedelta(days=days_to_sunday)
     s.enterabs(next_run_time.timestamp(), 1, send_weekly_report, ())
     s.run()
+"""
 
 def send_weekly_report(start_report_date,end_report_date):
 
