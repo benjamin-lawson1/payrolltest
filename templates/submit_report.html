@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Submit This Week's Report</title>
+{% endblock %}
+
+{% block body %}
+
+<div id="user_greeting">
+    Submit This Week's Report
+</div>
+<div id="modify_time">
+
+<form id="modify_form" action="/weekly_report_form" method="POST">
+
+    <label for="report_start_date">Start Date</label>
+    <input type="date" name="report_start_date" value="{{report_start_date}}">
+
+    <label for="report_end_date">End Date</label>
+    <input type="date" name="report_end_date" value="{{report_end_date}}">
+
+    <input type="submit">
+
+</form>
+</div>
+
+{% endblock %}
+
+

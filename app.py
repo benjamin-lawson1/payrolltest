@@ -72,8 +72,6 @@ class PastActions(db.Model):
 
 
 # create global variables
-global work_week_start, work_week_end
-
 work_week_start = dt.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - dt.timedelta(days=dt.datetime.now().weekday())
 work_week_end = work_week_start + dt.timedelta(days=6)
 
@@ -468,6 +466,26 @@ def edit_user(user_name=None,user_email=None):
     # . . . refresh
     return render_template('edit_user.html', user_name=user_name,user_email=user_email)
 
+# submit report
+
+@app.route("/weekly_report_form",methods=['GET','POST'])
+def weekly_report_form():
+
+    if request.method == 'POST':
+        try:
+            report_start_date = datetime.strptime(request.form['report_start_date'], '%Y-%m-%d')
+            report_end_date = datetime.strptime(request.form['report_end_date'], '%Y-%m-%d')
+
+            send_weekly_report(report_start_date,report_end_date)
+            return "report sent!"
+        except:
+            return "error"
+
+    # . . . load form
+    report_start_date = work_week_start.strftime('%Y-%m-%d')
+    report_end_date = work_week_end.strftime('%Y-%m-%d')
+    return render_template('submit_report.html', report_start_date = report_start_date, report_end_date = report_end_date)
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Manager's Panel
 
 # show managers's page
@@ -527,7 +545,7 @@ def schedule_automated_weekly_report():
     s.enterabs(next_run_time.timestamp(), 1, send_weekly_report, ())
     s.run()
 
-def send_weekly_report():
+def send_weekly_report(start_report_date,end_report_date):
 
     # ... find users
     crew_members = Users.query.all()
@@ -542,7 +560,7 @@ def send_weekly_report():
         days = []
 
         #  . . . find user records
-        crew_member_working_records = History.query.filter_by(name=crew_member_name).filter(History.start > work_week_start).all()
+        crew_member_working_records = History.query.filter_by(name=crew_member_name).filter(History.start >= start_report_date,History.end <= end_report_date).all()
 
         for record in crew_member_working_records:
             try: 
@@ -566,8 +584,8 @@ def send_weekly_report():
             except:
                 print('error')
         
-        start_of_working_week = str(work_week_start.strftime('%m/%d/%Y'))
-        end_of_working_week = str(work_week_end.strftime('%m/%d/%Y'))
+        start_of_working_week = str(start_report_date.strftime('%m/%d/%Y'))
+        end_of_working_week = str(end_report_date.strftime('%m/%d/%Y'))
         crew_member_weekly_hour_total_string = str(crew_member_weekly_hour_total)
         crew_member_email = (Users.query.filter_by(name=crew_member_name).first()).email
         crew_member_number_working_days = len(set(days))
@@ -595,7 +613,7 @@ def send_weekly_report():
     send_text(manager_email,manager_report_header,manager_report_body)
     
     website_output += manager_report_body
-    send_text("benjamin@kiawahislandgetaways.com","weekly report has been sent",website_output)
+    send_text("benjamin@kiawahislandgetaways.com","Weekly report has been sent",website_output)
 
 # add to records
 def add_to_record(action):
@@ -618,7 +636,7 @@ def send_text(email,subject,body):
     message['From'] = email_from
     message['To'] = email
     message['Subject'] = subject
-    message.attach(MIMEText(body, 'plain'))
+    message.attach(MIMEText(body, 'html'))
 
     # SMTP server and login credentials
     smtp_server = 'smtp.gmail.com'
@@ -640,5 +658,5 @@ with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
-    schedule_automated_weekly_report()
     app.run(debug=True)
+    schedule_automated_weekly_report()
