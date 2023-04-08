@@ -3,6 +3,7 @@
 # . . . import Flask
 from flask import Flask, render_template, request, redirect, url_for, make_response
 import sched
+import math
 import time
 import datetime as dt
 from datetime import datetime, timedelta
@@ -475,9 +476,14 @@ def weekly_report_form():
         try:
             report_start_date = datetime.strptime(request.form['report_start_date'], '%Y-%m-%d')
             report_end_date = datetime.strptime(request.form['report_end_date'], '%Y-%m-%d')
-
-            send_weekly_report(report_start_date,report_end_date)
-            return "report sent!"
+            function = request.form['function']
+            send_weekly_report(report_start_date,report_end_date,function)
+            preview = website_output
+            
+            if function == "live":
+                return "report sent!"
+            else:
+                return render_template('submit_report.html', report_start_date = report_start_date, report_end_date = report_end_date,preview=preview)
         except:
             return "error"
 
@@ -546,11 +552,12 @@ def schedule_automated_weekly_report():
     s.run()
 """
 
-def send_weekly_report(start_report_date,end_report_date):
+def send_weekly_report(start_report_date,end_report_date,function):
 
     # ... find users
-    crew_members = Users.query.all()
+    crew_members = Users.query.order_by(Users.id.desc()).all()
     crew_member_weekly_summary_list = ''
+    global website_output
     website_output = ''
 
     # . . . for each user
@@ -587,7 +594,7 @@ def send_weekly_report(start_report_date,end_report_date):
         
         start_of_working_week = str(start_report_date.strftime('%m/%d/%Y'))
         end_of_working_week = str(end_report_date.strftime('%m/%d/%Y'))
-        crew_member_weekly_hour_total_string = str(crew_member_weekly_hour_total)
+        crew_member_weekly_hour_total_string = str(math.ceil(crew_member_weekly_hour_total*4)/4)
         crew_member_email = (Users.query.filter_by(name=crew_member_name).first()).email
         crew_member_number_working_days = len(set(days))
 
@@ -596,13 +603,14 @@ def send_weekly_report(start_report_date,end_report_date):
         
 
         # . . . compile crew member weekly summary for manager report: Jessica - 15 hours
-        crew_member_weekly_summary_record = crew_member_name + ' - ' + str(crew_member_weekly_hour_total) + ' hour(s) | ' + str(crew_member_number_working_days) + ' working day(s) <br>' 
+        crew_member_weekly_summary_record = crew_member_name + ' - ' + crew_member_weekly_hour_total_string + ' hour(s) | ' + str(crew_member_number_working_days) + ' working day(s) <br>' 
         
 
         
         if crew_member_weekly_hour_total > 0:
             website_output += crew_member_email
-            send_text(crew_member_email,"Your Weekly Working Report",crew_member_compiled_message)
+            if function == "live":
+                send_text(crew_member_email,"Your Weekly Working Report",crew_member_compiled_message)
             crew_member_weekly_summary_list += crew_member_weekly_summary_record
         else:
             pass
@@ -611,10 +619,12 @@ def send_weekly_report(start_report_date,end_report_date):
     manager_email = 'shawn@kiawahislandgetaways.com'
     manager_report_body = 'Hi Shawn, here is your payroll report:<br>' + crew_member_weekly_summary_list + '<br> Have a great day!'
     manager_report_header = 'Crew Working Hours for week of ' + start_of_working_week + ' - ' + end_of_working_week
-    send_text(manager_email,manager_report_header,manager_report_body)
+    if function == "live":
+        send_text(manager_email,manager_report_header,manager_report_body)
     
     website_output += manager_report_body
-    send_text("benjamin@kiawahislandgetaways.com","Weekly report has been sent",website_output)
+    if function == "live":
+        send_text("benjamin@kiawahislandgetaways.com","Weekly report has been sent",website_output)
 
 # add to records
 def add_to_record(action):

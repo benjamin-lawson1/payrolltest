@@ -19,9 +19,16 @@
     <label for="report_end_date">End Date</label>
     <input type="date" name="report_end_date" value="{{report_end_date}}">
 
+    <label for="function">Select Function</label>
+    <select name="function">
+        <option value="preview" selected>Preview</option>
+        <option value="live">Submit</option>
+    </select>
+
     <input type="submit">
 
 </form>
+<p> {{ preview }}</p>
 </div>
 
 {% endblock %}
