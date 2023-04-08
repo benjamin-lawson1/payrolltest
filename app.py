@@ -599,7 +599,7 @@ def send_weekly_report(start_report_date,end_report_date,function):
         crew_member_number_working_days = len(set(days))
 
         # . . . compile message: Hi Jessica, here are your working hours for this week(1/1/2023 - 1/7/2023): ... in total, you worked 14 hours this week.
-        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here are your working report for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + str(crew_member_number_working_days) + ' day(s), for a total of ' + crew_member_weekly_hour_total_string + ' hour(s) this week. '
+        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here are your working report for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + str(crew_member_number_working_days) + ' day(s), for a total of ' + crew_member_weekly_hour_total_string + ' hour(s) this week. <br> <br> <br>'
         
 
         # . . . compile crew member weekly summary for manager report: Jessica - 15 hours
