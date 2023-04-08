@@ -617,7 +617,7 @@ def send_weekly_report(start_report_date,end_report_date,function):
         
     # . . . email manager here
     manager_email = 'shawn@kiawahislandgetaways.com'
-    manager_report_body = 'Hi Shawn, here is your payroll report:<br>' + crew_member_weekly_summary_list + '<br> Have a great day!'
+    manager_report_body = 'Hi Shawn, here is your payroll report:<br><br>' + crew_member_weekly_summary_list + '<br> Have a great day!'
     manager_report_header = 'Crew Working Hours for week of ' + start_of_working_week + ' - ' + end_of_working_week
     if function == "live":
         send_text(manager_email,manager_report_header,manager_report_body)
