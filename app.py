@@ -608,7 +608,7 @@ def send_weekly_report(start_report_date,end_report_date,function):
 
         
         if crew_member_weekly_hour_total > 0:
-            website_output += crew_member_email
+            website_output += crew_member_compiled_message
             if function == "live":
                 send_text(crew_member_email,"Your Weekly Working Report",crew_member_compiled_message)
             crew_member_weekly_summary_list += crew_member_weekly_summary_record
