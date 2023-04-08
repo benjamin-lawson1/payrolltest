@@ -555,7 +555,7 @@ def schedule_automated_weekly_report():
 def send_weekly_report(start_report_date,end_report_date,function):
 
     # ... find users
-    crew_members = Users.query.order_by(Users.id.desc()).all()
+    crew_members = Users.query.order_by(Users.id.asc()).all()
     crew_member_weekly_summary_list = ''
     global website_output
     website_output = ''
@@ -670,4 +670,4 @@ with app.app_context():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    schedule_automated_weekly_report()
+    # schedule_automated_weekly_report()
