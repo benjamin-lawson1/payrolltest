@@ -569,35 +569,36 @@ def send_weekly_report(start_report_date,end_report_date,function):
 
     # . . . for each user
     for crew_member in crew_members:
-        crew_member_name = crew_member.name
-        crew_member_records = ''
-        crew_member_weekly_hour_total = 0
-        days = []
+        if crew_member.name != "Ben - Work":
+            crew_member_name = crew_member.name
+            crew_member_records = ''
+            crew_member_weekly_hour_total = 0
+            days = []
 
-        #  . . . find user records
-        crew_member_working_records = History.query.filter_by(name=crew_member_name).filter(History.start >= start_report_date,History.end <= end_report_date).all()
+            #  . . . find user records
+            crew_member_working_records = History.query.filter_by(name=crew_member_name).filter(History.start >= start_report_date,History.end <= end_report_date).all()
 
-        for record in crew_member_working_records:
-            try: 
-                # . . . collect data
-                day = str(record.start.strftime('%a'))
-                record_start_time = str(record.start.strftime('%I:%M %p'))
-                record_end_time = str(record.end.strftime('%I:%M %p'))
-                record_time_total = round((record.end - record.start).total_seconds() / 3600,1)
-                record_time_total_string = str(record_time_total)
-                
-                # . . . compile message: Mon: 9:30AM - 10:30AM | 1 hour(s)
-                compiled_record = day + ': ' + record_start_time + " - " + record_end_time + " | " + record_time_total_string + " hour(s) <br>"
+            for record in crew_member_working_records:
+                try: 
+                    # . . . collect data
+                    day = str(record.start.strftime('%a'))
+                    record_start_time = str(record.start.strftime('%I:%M %p'))
+                    record_end_time = str(record.end.strftime('%I:%M %p'))
+                    record_time_total = round((record.end - record.start).total_seconds() / 3600,1)
+                    record_time_total_string = str(record_time_total)
+                    
+                    # . . . compile message: Mon: 9:30AM - 10:30AM | 1 hour(s)
+                    compiled_record = day + ': ' + record_start_time + " - " + record_end_time + " | " + record_time_total_string + " hour(s) <br>"
 
-                # . . . add message to records
-                crew_member_records += compiled_record
-                crew_member_weekly_hour_total += record_time_total
+                    # . . . add message to records
+                    crew_member_records += compiled_record
+                    crew_member_weekly_hour_total += record_time_total
 
-                # . . . add day to days
-                days.append(day)
+                    # . . . add day to days
+                    days.append(day)
 
-            except:
-                print('error')
+                except:
+                    print('error')
         
         start_of_working_week = str(start_report_date.strftime('%m/%d/%Y'))
         end_of_working_week = str(end_report_date.strftime('%m/%d/%Y'))
