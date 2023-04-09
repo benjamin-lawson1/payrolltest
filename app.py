@@ -482,16 +482,18 @@ def weekly_report_form():
 
     if request.method == 'POST':
         try:
+            test_start_date = request.form['report_start_date']
+            test_end_date = request.form['report_end_date']
             report_start_date = datetime.strptime(request.form['report_start_date'], '%Y-%m-%d')
             report_end_date = datetime.strptime(request.form['report_end_date'], '%Y-%m-%d')
             function = request.form['function']
-            send_weekly_report(report_start_date,report_end_date,function)
-            preview = website_output
+            
+            preview = send_weekly_report(report_start_date,report_end_date,function)
             
             if function == "live":
                 return "report sent!"
             else:
-                return render_template('submit_report.html', report_start_date = report_start_date, report_end_date = report_end_date,preview=preview)
+                return render_template('submit_report.html', report_start_date = test_start_date, report_end_date = test_end_date,preview=preview)
         except:
             return "error"
 
@@ -565,7 +567,6 @@ def send_weekly_report(start_report_date,end_report_date,function):
     # ... find users
     crew_members = Users.query.order_by(Users.id.asc()).all()
     crew_member_weekly_summary_list = ''
-    global website_output
     website_output = ''
 
     # . . . for each user
@@ -633,6 +634,8 @@ def send_weekly_report(start_report_date,end_report_date,function):
     website_output += manager_report_body
     if function == "live":
         send_text("benjamin@kiawahislandgetaways.com","Weekly report has been sent",website_output)
+
+    return website_output
 
 # add to records
 def add_to_record(action):
