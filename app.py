@@ -268,104 +268,113 @@ def commit_record():
         old_start_time = request.form['old_start_time']
         old_end_time = request.form['old_end_time']
         reason = request.form['reason']
+        new_start = request.form['new_start_time']
+        new_end = request.form['new_end_time']
+        new_start_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_start,'%b %d, %Y %H:%M')
+        new_end_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_end,'%b %d, %Y %H:%M')
+
+        if new_end_time < new_start_time:
+            return('Error: Your end time is before your start time! Please press "Back" to edit.')
         
-        # . . . find manager information
-        manager = Users.query.filter_by(type = 'manager').first()
-        manager_name = manager.name
-        manager_email = manager.email
-
-        # . . . find user details
-        if selected_user == 'None':
-
-            # . . . if user change
-            user = Users.query.filter_by(pin = user_pin).first()
-            user_email = user.email
-            current_user = user.name
-    
         else:
 
-            # . . . if manager change change
-            user = Users.query.filter_by(name = selected_user).first()
-            user_email = user.email
-            current_user = user.name
+            # . . . find manager information
+            manager = Users.query.filter_by(type = 'manager').first()
+            manager_name = manager.name
+            manager_email = manager.email
+
+            # . . . find user details
+            if selected_user == 'None':
+
+                # . . . if user change
+                user = Users.query.filter_by(pin = user_pin).first()
+                user_email = user.email
+                current_user = user.name
         
+            else:
 
-        # . . .  Modify Record
-        if delete == 'not_selected':
-            new_start = request.form['new_start_time']
-            new_end = request.form['new_end_time']
-
-            # . . . convert string back into a date time object
-            new_start_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_start,'%b %d, %Y %H:%M')
-            new_end_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_end,'%b %d, %Y %H:%M')
-
-            # . . . update record
-            record_to_update = History.query.get_or_404(id)
-            record_to_update.start = new_start_time
-            record_to_update.end = new_end_time
-            db.session.commit()
+                # . . . if manager change change
+                user = Users.query.filter_by(name = selected_user).first()
+                user_email = user.email
+                current_user = user.name
             
-            reason_string = post_date + " (" + old_start_time + " - " + old_end_time + ") to " + post_new_date + "(" + new_start + " - " + new_end + ") due to the following reason: " + reason + "."
-            add_to_record(current_user + " has modified their working history from " + reason_string)
 
-            #. . . set messages for notifications
-            user_change_manager_subject = current_user + " has modified their working history."
-            user_change_manager_body = current_user + " has modified their working history on " + reason_string
-            user_change_user_subject = "You have modified your working history."
-            user_change_user_body = "You've modified your working history on " + reason_string
+            # . . .  Modify Record
+            if delete == 'not_selected':
+                new_start = request.form['new_start_time']
+                new_end = request.form['new_end_time']
+
+                # . . . convert string back into a date time object
+                new_start_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_start,'%b %d, %Y %H:%M')
+                new_end_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_end,'%b %d, %Y %H:%M')
+
+                # . . . update record
+                record_to_update = History.query.get_or_404(id)
+                record_to_update.start = new_start_time
+                record_to_update.end = new_end_time
+                db.session.commit()
+                
+                reason_string = post_date + " (" + old_start_time + " - " + old_end_time + ") to " + post_new_date + "(" + new_start + " - " + new_end + ") due to the following reason: " + reason + "."
+                add_to_record(current_user + " has modified their working history from " + reason_string)
+
+                #. . . set messages for notifications
+                user_change_manager_subject = current_user + " has modified their working history."
+                user_change_manager_body = current_user + " has modified their working history on " + reason_string
+                user_change_user_subject = "You have modified your working history."
+                user_change_user_body = "You've modified your working history on " + reason_string
+                
+                manager_change_manager_subject = "You have modified " + current_user + "'s working history."
+                manager_change_manager_body = "You have modified " + current_user + "'s working history on " + reason_string
+                manager_change_user_subject = manager_name + " has modified your working history."
+                manager_change_user_body = manager_name + " has modified your working history on " + reason_string
             
-            manager_change_manager_subject = "You have modified " + current_user + "'s working history."
-            manager_change_manager_body = "You have modified " + current_user + "'s working history on " + reason_string
-            manager_change_user_subject = manager_name + " has modified your working history."
-            manager_change_user_body = manager_name + " has modified your working history on " + reason_string
+
+            # . . . Delete Record
+            else:
+                # . . . delete record
+                record_to_delete = History.query.get_or_404(id)
+                db.session.delete(record_to_delete)
+                db.session.commit()
+
+                add_to_record(current_user + " has deleted their working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + ".")
+
+                # . . . set messages for notifications
+                user_change_manager_subject = current_user + " has deleted their working history."
+                user_change_manager_body = current_user + " has deleted their working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
+                user_change_user_subject = "You've deleted your working history."
+                user_change_user_body = "You've deleted deleted your working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
+                
+                manager_change_manager_subject = "You've deleted " + current_user + "'s work history record"
+                manager_change_manager_body = "You've deleted " + current_user + "'s work history record on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
+                manager_change_user_subject = manager_name + " has deleted your working history."
+                manager_change_user_body = manager_name + " has deleted your working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
         
+            # . . . send notification
+            if selected_user == 'None':
 
-        # . . . Delete Record
-        else:
-            # . . . delete record
-            record_to_delete = History.query.get_or_404(id)
-            db.session.delete(record_to_delete)
-            db.session.commit()
+                # . . . if this is a user change
+                user = Users.query.filter_by(pin = user_pin).first()
+                user_email = user.email
+                current_user = user.name
 
-            add_to_record(current_user + " has deleted their working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + ".")
+                # . . . send message to manager and user
+                executor.submit(send_text,manager_email,user_change_manager_subject,user_change_manager_body)
+                executor.submit(send_text,user_email,user_change_user_subject,user_change_user_body)
+                
+            else:
+                
+                # . . . if this is a manager change
+                user = Users.query.filter_by(name = selected_user).first()
+                user_email = user.email
+                current_user = user.name
 
-            # . . . set messages for notifications
-            user_change_manager_subject = current_user + " has deleted their working history."
-            user_change_manager_body = current_user + " has deleted their working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
-            user_change_user_subject = "You've deleted your working history."
-            user_change_user_body = "You've deleted deleted your working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
-            
-            manager_change_manager_subject = "You've deleted " + current_user + "'s work history record"
-            manager_change_manager_body = "You've deleted " + current_user + "'s work history record on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
-            manager_change_user_subject = manager_name + " has deleted your working history."
-            manager_change_user_body = manager_name + " has deleted your working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
-       
-        # . . . send notification
-        if selected_user == 'None':
+                executor.submit(send_text,manager_email,manager_change_manager_subject,manager_change_manager_body)
+                executor.submit(send_text,user_email,manager_change_user_subject,manager_change_user_body)
 
-            # . . . if this is a user change
-            user = Users.query.filter_by(pin = user_pin).first()
-            user_email = user.email
-            current_user = user.name
-
-            # . . . send message to manager and user
-            executor.submit(send_text,manager_email,user_change_manager_subject,user_change_manager_body)
-            executor.submit(send_text,user_email,user_change_user_subject,user_change_user_body)
-            
-        else:
-            
-            # . . . if this is a manager change
-            user = Users.query.filter_by(name = selected_user).first()
-            user_email = user.email
-            current_user = user.name
-
-            executor.submit(send_text,manager_email,manager_change_manager_subject,manager_change_manager_body)
-            executor.submit(send_text,user_email,manager_change_user_subject,manager_change_user_body)
-
-        if selected_user == 'None':
-            return redirect(url_for('home', user_pin=user_pin,selected_user=selected_user))
-        else:
-            return home(user_pin=user_pin,selected_user=selected_user)
+            if selected_user == 'None':
+                return redirect(url_for('home', user_pin=user_pin,selected_user=selected_user))
+            else:
+                return home(user_pin=user_pin,selected_user=selected_user)
 
     else:
         pass
@@ -439,7 +448,6 @@ def delete_user(user_id):
     return redirect(url_for('home', user_pin=admin_pin))
 
 # edit user
-
 @app.route("/edit_user/<string:user_name>/<string:user_email>",methods=['GET','POST'])
 @app.route("/edit_user",methods=['GET','POST'])
 def edit_user(user_name=None,user_email=None):
