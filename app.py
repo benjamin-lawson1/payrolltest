@@ -482,8 +482,6 @@ def weekly_report_form():
 
     if request.method == 'POST':
         try:
-            test_start_date = request.form['report_start_date']
-            test_end_date = request.form['report_end_date']
             report_start_date = datetime.strptime(request.form['report_start_date'], '%Y-%m-%d')
             report_end_date = datetime.strptime(request.form['report_end_date'], '%Y-%m-%d')
             function = request.form['function']
@@ -493,7 +491,7 @@ def weekly_report_form():
             if function == "live":
                 return "report sent!"
             else:
-                return render_template('submit_report.html', report_start_date = test_start_date, report_end_date = test_end_date,preview=preview)
+                return render_template('submit_report.html', report_start_date = request.form['report_start_date'], report_end_date = request.form['report_end_date'],preview=preview)
         except:
             return "error"
 
