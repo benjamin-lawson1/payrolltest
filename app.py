@@ -509,7 +509,7 @@ def manager(selected_user=None):
     
     users = Users.query.filter_by(type = 'crew_member').all()
 
-    if today.weekday() == 1:
+    if today.weekday() == 0:
         user_history = History.query.filter_by(name=selected_user).order_by(History.start.desc()).filter(History.start >= work_week_start - dt.timedelta(days=7))
     else:
         user_history = History.query.filter_by(name=selected_user).order_by(History.start.desc()).filter(History.start >= work_week_start)
