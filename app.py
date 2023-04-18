@@ -72,14 +72,13 @@ class PastActions(db.Model):
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Create Routes
 
 
-# create global variables
 work_week_start = dt.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - dt.timedelta(days=dt.datetime.now().weekday())
 work_week_end = work_week_start + dt.timedelta(days=6)
+today = datetime.today()
 
 @app.route("/")
 def website_load():
     return 'no pin entered.'
-
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Home Screen
 @app.route("/<int:user_pin>")
@@ -509,7 +508,12 @@ def manager(selected_user=None):
     print(selected_user)
     
     users = Users.query.filter_by(type = 'crew_member').all()
-    user_history = History.query.filter_by(name=selected_user).order_by(History.start.desc()).filter(History.start >= work_week_start)
+
+    if today.weekday() == 1:
+        user_history = History.query.filter_by(name=selected_user).order_by(History.start.desc()).filter(History.start >= work_week_start - dt.timedelta(days=7))
+    else:
+        user_history = History.query.filter_by(name=selected_user).order_by(History.start.desc()).filter(History.start >= work_week_start)
+
     manager_pin = (Users.query.filter_by(type = 'manager').first()).pin
     
     return render_template('manager.html',users=users,history=user_history,user_pin=manager_pin,selected_user=selected_user,greeting=greeting)
