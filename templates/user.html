@@ -15,7 +15,7 @@
 <!-- Clock In / Out -->
 {% if confirmed == 1 %}
 <div id="confirmed">
-    <p>Hello there. Please bookmark this page for your convenience by tapping "Add to Home screen" in your browser's menu bar.</p>
+    <p> Hello there. Please bookmark this page for your convenience by tapping "Add to Home screen" in your browser's menu bar.</p>
 </div>
 {% endif %}
 <form id="clock-wrapper" action="/clock_action" method="post">
@@ -24,6 +24,15 @@
     
     <input id="clock" type="submit" name="clock_status"value="{{ clock_status }}">
     
+    {% if clock_status != clock_out_text %}
+        {% if show_drive_checkbox == True %}
+
+        <input type="checkbox" id="did_drive" name="did_drive" value="True" checked>
+        <label for="did_drive">I drove today.</label>
+        
+        {% endif %}
+    {% endif %}
+
     {% if clock_status == clock_out_text %}
     
     <input id="daily-report" type="text" name="report" placeholder="Any notes?">
@@ -43,6 +52,7 @@
         <th>Start</th>
         <th>Finish</th> 
         <th>Notes</th>
+        <th>Did Drive</th>
         <th></th>
     </tr>
 
@@ -54,8 +64,9 @@
         <td>{{ row.start.strftime("%I:%M %p") }}</td>
         <td>{{ row.end.strftime("%I:%M %p") }}</td>
         <td>{{ row.report }}</td>
+        <td>{{ row.did_drive }}</td>
         <td> 
-            <a href="/edit_record/{{row.id}}/{{row.start.strftime('%b %d, %Y')}}/{{row.start.strftime('%H:%M')}}/{{row.end.strftime('%H:%M')}}/{{ user_pin }}">
+            <a href="/edit_record/{{row.id}}/{{row.start.strftime('%b %d, %Y')}}/{{row.start.strftime('%H:%M')}}/{{row.end.strftime('%H:%M')}}/{{row.did_drive}}/{{ user_pin }}">
                 <button> edit </button>
             </a> 
         </td>

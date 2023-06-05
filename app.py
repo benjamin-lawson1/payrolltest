@@ -1,6 +1,5 @@
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Set Up Application
 
-# . . . import Flask
 from flask import Flask, render_template, request, redirect, url_for, make_response
 import sched
 import math
@@ -37,7 +36,10 @@ app = Flask(__name__)
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Create Databases
 
 # . . . set up SQL database
+global notifications
 
+# . . . use this setting to turn off email notifications for testing
+notifications = True
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///test.db').replace("postgres://", "postgresql://")
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
@@ -61,6 +63,7 @@ class History(db.Model):
     start = db.Column(db.DateTime)
     end = db.Column(db.DateTime, nullable = True)
     report = db.Column(db.String(300), unique=False, nullable=True)
+    did_drive = db.Column(db.Boolean)
 
 # . . . add db: Users (id, name, email, pin)
 class PastActions(db.Model):
@@ -140,6 +143,12 @@ def home(user_pin,selected_user=None):
         try:
             current_user = Users.query.filter_by(pin=user_pin).first()
             user_name = current_user.name
+
+            if "Jessica" in user_name or "Chrystal" in user_name:
+                show_drive_checkbox = True
+            else:
+                show_drive_checkbox = False
+                
             if current_user.confirmed == 0:
                 current_user.confirmed = 1
                 db.session.commit()
@@ -181,7 +190,7 @@ def home(user_pin,selected_user=None):
             db.session.commit()
 
             # . . display
-            return render_template('user.html',user=user_name,history=all_history,clock_status=clock_status,user_pin=user_pin,greeting=greeting,clock_in_text=clock_in_text,clock_out_text=clock_out_text,confirmed=confirmed)
+            return render_template('user.html',user=user_name,history=all_history,clock_status=clock_status,user_pin=user_pin,greeting=greeting,clock_in_text=clock_in_text,clock_out_text=clock_out_text,confirmed=confirmed,show_drive_checkbox=show_drive_checkbox)
         
         except:
             return "Sorry, that pin is not associated with any user."
@@ -201,7 +210,19 @@ def clock_action():
         message_time_now =  time_now.strftime("%I:%M %p on %b %d, %Y")
 
         if clock_status == "Start Shift":
-            new_record = History(name = user_name,start = time_now, end = time_now, report='')
+            try:
+                did_drive = request.form['did_drive']
+                if did_drive == "True":
+                    did_drive = True
+                    print("User drove to work.")
+                else:
+                    did_drive = False
+                    print("User did not drive to work.")
+            except:
+                did_drive = False
+                print("No drive settings selected")
+
+            new_record = History(name = user_name,start = time_now, end = time_now, report='',did_drive = did_drive)
             db.session.add(new_record)
             db.session.commit()
              
@@ -245,11 +266,11 @@ def clock_action():
         return redirect(url_for('home', user_pin=user_pin))
 
 # take to update record screen
-@app.route("/edit_record/<int:id>/<string:date>/<string:start_time>/<string:end_time>/<int:user_pin>/<string:selected_user>")
-@app.route("/edit_record/<int:id>/<string:date>/<string:start_time>/<string:end_time>/<int:user_pin>")
-def edit_record(id,date,start_time,end_time,user_pin,selected_user=None):
+@app.route("/edit_record/<int:id>/<string:date>/<string:start_time>/<string:end_time>/<int:user_pin>/<string:did_drive>/<string:selected_user>")
+@app.route("/edit_record/<int:id>/<string:date>/<string:start_time>/<string:end_time>/<string:did_drive>/<int:user_pin>")
+def edit_record(id,date,start_time,end_time,user_pin,did_drive,selected_user=None):
     date_object = datetime.strptime(date, '%b %d, %Y')
-    return render_template('edit_record.html',id=id,date=date_object,start_time=start_time,end_time=end_time,user_pin=user_pin,selected_user=selected_user)
+    return render_template('edit_record.html',id=id,date=date_object,start_time=start_time,end_time=end_time,user_pin=user_pin,did_drive=did_drive,selected_user=selected_user)
     
 # commit update
 @app.route("/commit_record",methods=['GET','POST'])
@@ -590,6 +611,11 @@ def send_weekly_report(start_report_date,end_report_date,function):
                     record_end_time = str(record.end.strftime('%I:%M %p'))
                     record_time_total = round((record.end - record.start).total_seconds() / 3600,1)
                     record_time_total_string = str(record_time_total)
+                    days_drove_to_work = record.did_drive
+                    
+                    if days_drove_to_work == True:
+                        days.append(day)
+                
                     
                     # . . . compile message: Mon: 9:30AM - 10:30AM | 1 hour(s)
                     compiled_record = day + ': ' + record_start_time + " - " + record_end_time + " | " + record_time_total_string + " hour(s) <br>"
@@ -599,7 +625,7 @@ def send_weekly_report(start_report_date,end_report_date,function):
                     crew_member_weekly_hour_total += record_time_total
 
                     # . . . add day to days
-                    days.append(day)
+                    
 
                 except:
                     print('error')
@@ -608,14 +634,14 @@ def send_weekly_report(start_report_date,end_report_date,function):
         end_of_working_week = str(end_report_date.strftime('%m/%d/%Y'))
         crew_member_weekly_hour_total_string = str(math.ceil(crew_member_weekly_hour_total*4)/4)
         crew_member_email = (Users.query.filter_by(name=crew_member_name).first()).email
-        crew_member_number_working_days = len(set(days))
+        drive_days = str(len(set(days)))
 
         # . . . compile message: Hi Jessica, here are your working hours for this week(1/1/2023 - 1/7/2023): ... in total, you worked 14 hours this week.
-        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here is your working report for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked ' + str(crew_member_number_working_days) + ' day(s), for a total of ' + crew_member_weekly_hour_total_string + ' hour(s) this week. <br> <br> <br>'
+        crew_member_compiled_message = 'Hi ' + crew_member_name + ', here is your working report for this week(' + start_of_working_week + " - " + end_of_working_week + '): <br><br>' + crew_member_records + '<br> In total, you worked a total of ' + crew_member_weekly_hour_total_string + ' hour(s) this week and drove in ' + drive_days + ' day(s) this week.<br> <br> <br>'
         
 
         # . . . compile crew member weekly summary for manager report: Jessica - 15 hours
-        crew_member_weekly_summary_record = crew_member_name + ' - ' + crew_member_weekly_hour_total_string + ' hour(s) | ' + str(crew_member_number_working_days) + ' working day(s) <br>' 
+        crew_member_weekly_summary_record = crew_member_name + ' - ' + crew_member_weekly_hour_total_string + ' hour(s) | ' + str(drive_days) + ' drive day(s) <br>' 
         
 
         
@@ -670,12 +696,15 @@ def send_text(email,subject,body):
     smtp_password = password
 
     # Send email
-    with smtplib.SMTP(smtp_server, smtp_port) as server:
-        server.starttls()
-        server.login(smtp_username, smtp_password)
-        text = message.as_string()
-        server.sendmail(email_from, email_to, text)
-        print("email sent")
+    if notifications == True:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            text = message.as_string()
+            server.sendmail(email_from, email_to, text)
+            print("email sent")
+    else:
+        pass
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Run App
 
