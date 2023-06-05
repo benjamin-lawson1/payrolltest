@@ -292,6 +292,7 @@ def commit_record():
         new_end = request.form['new_end_time']
         new_start_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_start,'%b %d, %Y %H:%M')
         new_end_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_end,'%b %d, %Y %H:%M')
+        
 
         if new_end_time < new_start_time:
             return('Error: Your end time is before your start time! Please press "Back" to edit.')
@@ -356,18 +357,18 @@ def commit_record():
                 db.session.delete(record_to_delete)
                 db.session.commit()
 
-                add_to_record(current_user + " has deleted their working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + ".")
+                add_to_record(current_user + " has deleted their working history on " + str(date) + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + ".")
 
                 # . . . set messages for notifications
                 user_change_manager_subject = current_user + " has deleted their working history."
-                user_change_manager_body = current_user + " has deleted their working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
+                user_change_manager_body = current_user + " has deleted their working history on " + str(date) + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
                 user_change_user_subject = "You've deleted your working history."
-                user_change_user_body = "You've deleted deleted your working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
+                user_change_user_body = "You've deleted deleted your working history on " + str(date) + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
                 
                 manager_change_manager_subject = "You've deleted " + current_user + "'s work history record"
-                manager_change_manager_body = "You've deleted " + current_user + "'s work history record on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
+                manager_change_manager_body = "You've deleted " + current_user + "'s work history record on " + str(date) + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
                 manager_change_user_subject = manager_name + " has deleted your working history."
-                manager_change_user_body = manager_name + " has deleted your working history on " + date + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
+                manager_change_user_body = manager_name + " has deleted your working history on " + str(date) + " from " + old_start_time + " - " + old_end_time + " due to the following reason: " + reason + "."
         
             # . . . send notification
             if selected_user == 'None':
