@@ -39,7 +39,7 @@ app = Flask(__name__)
 global notifications
 
 # . . . use this setting to turn off email notifications for testing
-notifications = True
+notifications = False
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///test.db').replace("postgres://", "postgresql://")
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
@@ -210,17 +210,18 @@ def clock_action():
         message_time_now =  time_now.strftime("%I:%M %p on %b %d, %Y")
 
         if clock_status == "Start Shift":
+
+            # Get Drive Status
             try:
                 did_drive = request.form['did_drive']
                 if did_drive == "True":
                     did_drive = True
                     print("User drove to work.")
-                else:
-                    did_drive = False
-                    print("User did not drive to work.")
             except:
-                did_drive = False
-                print("No drive settings selected")
+                if "Jessica" in user_name or "Chrystal" in user_name:
+                    did_drive = False
+                else:
+                    did_drive = None
 
             new_record = History(name = user_name,start = time_now, end = time_now, report='',did_drive = did_drive)
             db.session.add(new_record)
@@ -293,6 +294,17 @@ def commit_record():
         new_start_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_start,'%b %d, %Y %H:%M')
         new_end_time = datetime.strptime(date.strftime("%b %d, %Y") + " " + new_end,'%b %d, %Y %H:%M')
         
+        selected_user = Users.query.filter_by(pin = user_pin).first()
+        selected_user = selected_user.name
+        if "Jessica" in selected_user or "Chrystal" in selected_user:
+            try:
+                did_drive = request.form['did_drive'] 
+                if did_drive == "True":
+                    did_drive = True
+            except:
+                did_drive = False
+        else:
+            did_drive = None
 
         if new_end_time < new_start_time:
             return('Error: Your end time is before your start time! Please press "Back" to edit.')
@@ -333,6 +345,7 @@ def commit_record():
                 record_to_update = History.query.get_or_404(id)
                 record_to_update.start = new_start_time
                 record_to_update.end = new_end_time
+                record_to_update.did_drive = did_drive
                 db.session.commit()
                 
                 reason_string = post_date + " (" + old_start_time + " - " + old_end_time + ") to " + post_new_date + "(" + new_start + " - " + new_end + ") due to the following reason: " + reason + "."

@@ -34,6 +34,26 @@
                 <td><label for="new_end_time"> Update End Time: </label></td>
                 <td><input class="input" type="time" name="new_end_time" value="{{ end_time }}"></td>
             </tr>
+            {% if did_drive != "None" %}
+            <tr>
+                {% if did_drive == "True" %}
+                <td>
+                    <label for="did_drive">I drove today.</label>
+                </td>
+                <td>
+                    <input type="checkbox" id="did_drive" name="did_drive" value="True" checked>
+                </td>
+                {% endif %}
+                {% if did_drive == "False" %}
+                <td>
+                    <label for="did_drive">I drove today.</label>
+                </td>
+                <td>
+                    <input type="checkbox" id="did_drive" name="did_drive" value="True">
+                </td>
+                {% endif %}
+            </tr>
+            {% endif %}
             <tr>
                 <td><label for="delete"> Delete (Check box and press submit to confirm) </label></td>
                 <td><input class="input" type="checkbox" name="delete"></td>
