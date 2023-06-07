@@ -39,7 +39,7 @@ app = Flask(__name__)
 global notifications
 
 # . . . use this setting to turn off email notifications for testing
-notifications = False
+notifications = True
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///test.db').replace("postgres://", "postgresql://")
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
@@ -603,6 +603,7 @@ def send_weekly_report(start_report_date,end_report_date,function):
 
     # ... find users
     crew_members = Users.query.order_by(Users.id.asc()).all()
+    print(crew_members)
     crew_member_weekly_summary_list = ''
     website_output = ''
 
