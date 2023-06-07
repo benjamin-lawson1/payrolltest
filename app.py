@@ -603,12 +603,12 @@ def send_weekly_report(start_report_date,end_report_date,function):
 
     # ... find users
     crew_members = Users.query.order_by(Users.id.asc()).all()
-    print(crew_members)
     crew_member_weekly_summary_list = ''
     website_output = ''
 
     # . . . for each user
     for crew_member in crew_members:
+        print(crew_member.name)
         if crew_member.name != "Ben - Work":
             crew_member_name = crew_member.name
             crew_member_records = ''
