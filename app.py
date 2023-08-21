@@ -689,7 +689,7 @@ def add_to_record(action):
     db.session.commit()
 
 # send texts
-def send_text(email,subject, body):
+def send_text(email, subject, body):
 
     email_from = 'benjaminlawson4@Gmail.com'
     password = 'akaiktlmkjggqmlj'
