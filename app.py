@@ -1,6 +1,8 @@
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Set Up Application
 
 from flask import Flask, render_template, request, redirect, url_for, make_response
+import twilio
+from twilio.rest import Client
 import sched
 import math
 import time
@@ -9,6 +11,7 @@ from datetime import datetime, timedelta
 import random
 from flask_migrate import Migrate
 from sqlalchemy import create_engine
+
 
 # . . . import ability to perform background tasks
 from concurrent.futures import ThreadPoolExecutor
@@ -157,7 +160,7 @@ def home(user_pin,selected_user=None):
                 add_to_record(user_name + "'s account has been confirmed.")
 
                 #. . . Alert Admin
-                executor.submit(send_text,'8433430072@tmomail.net','Account Confirmed',user_name + ' has confirmed their account.')
+                executor.submit(send_text_message('8433430072', user_name + ' has confirmed their account.'))
             
             else:
                 confirmed = 0
@@ -201,8 +204,8 @@ def home(user_pin,selected_user=None):
 def clock_action():
 
     if request.method == 'POST':
-        shawn_email = '8433435075@tmomail.net'
-        jeanette_email = '8433437215@tmomail.net'
+        shawn_email = '18433435075'
+        jeanette_email = '18433437215'
         clock_status = request.form['clock_status']
         user_name = request.form['user']
         user_email = (Users.query.filter_by(name = user_name).first()).email
@@ -232,13 +235,13 @@ def clock_action():
             # . . . Notify user
             subject = "You've Clocked In"
             body = "You've clocked in at " + message_time_now + "."
-            executor.submit(send_text,user_email,subject,body)
+            executor.submit(send_text_message, user_email, body)
 
             # . . . Notify manager
             subject = user_name + " has clocked in."
             body = user_name + " has clocked in at " + message_time_now + "." 
-            executor.submit(send_text,shawn_email,subject,body)
-            executor.submit(send_text,jeanette_email,subject,body)
+            executor.submit(send_text_message, shawn_email,body)
+            executor.submit(send_text_message, jeanette_email,body)
         
         elif clock_status == "End Shift":
             report = request.form['report']
@@ -252,13 +255,13 @@ def clock_action():
             # . . . send to user
             subject = "You've Clocked Out"
             body = "You've clocked out at " + message_time_now + "."
-            executor.submit(send_text,user_email,subject,body)
+            executor.submit(send_text_message,user_email,body)
 
             # . . . send to manager
             subject = user_name + " has clocked out."
             body = user_name + " has clocked out at " + message_time_now + ". End of day report :" + report
-            executor.submit(send_text,shawn_email,subject,body)
-            executor.submit(send_text,jeanette_email,subject,body)
+            executor.submit(send_text_message,shawn_email,body)
+            executor.submit(send_text_message,jeanette_email,body)
 
         # . . . find user pin and pass back to home 
         user_pin = (Users.query.filter(Users.name==user_name).first()).pin
@@ -392,8 +395,8 @@ def commit_record():
                 current_user = user.name
 
                 # . . . send message to manager and user
-                executor.submit(send_text,manager_email,user_change_manager_subject,user_change_manager_body)
-                executor.submit(send_text,user_email,user_change_user_subject,user_change_user_body)
+                executor.submit(send_text_message,manager_email,user_change_manager_subject,user_change_manager_body)
+                executor.submit(send_text_message,user_email,user_change_user_subject,user_change_user_body)
                 
             else:
                 
@@ -402,8 +405,8 @@ def commit_record():
                 user_email = user.email
                 current_user = user.name
 
-                executor.submit(send_text,manager_email,manager_change_manager_subject,manager_change_manager_body)
-                executor.submit(send_text,user_email,manager_change_user_subject,manager_change_user_body)
+                executor.submit(send_text_message,manager_email,manager_change_manager_subject,manager_change_manager_body)
+                executor.submit(send_text_message,user_email,manager_change_user_subject,manager_change_user_body)
 
             if selected_user == 'None':
                 return redirect(url_for('home', user_pin=user_pin,selected_user=selected_user))
@@ -442,7 +445,7 @@ def create_user():
 
             add_to_record("A new account has been created for " + name + ".")
             
-            executor.submit(send_text,email,subject,body)
+            executor.submit(send_text_message,email,body)
             
             # . . . refresh
             return home(admin_pin)
@@ -510,7 +513,6 @@ def edit_user(user_name=None,user_email=None):
     return render_template('edit_user.html', user_name=user_name,user_email=user_email)
 
 # submit report
-
 @app.route("/weekly_report_form",methods=['GET','POST'])
 def weekly_report_form():
 
@@ -687,7 +689,7 @@ def add_to_record(action):
     db.session.commit()
 
 # send texts
-def send_text(email,subject,body):
+def send_text(email,subject, body):
 
     email_from = 'benjaminlawson4@Gmail.com'
     password = 'akaiktlmkjggqmlj'
@@ -720,6 +722,21 @@ def send_text(email,subject,body):
             print("email sent")
     else:
         pass
+
+def send_text_message(phone_number, body):
+    # Twilio credentials
+    account_sid = 'AC3a05bf7e7d0967566a90868881946b6e'
+    auth_token = '76e2bca4375345370a84d4f22d9a327c'
+
+    client = Client(account_sid, auth_token)
+
+    message = client.messages.create(
+        body=body,
+        from_='+18039415612',
+        to=phone_number
+    )
+
+    print("Text message sent")
 
 # : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : : Run App
 
