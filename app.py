@@ -160,7 +160,7 @@ def home(user_pin,selected_user=None):
                 add_to_record(user_name + "'s account has been confirmed.")
 
                 #. . . Alert Admin
-                executor.submit(send_text_message('8433430072', user_name + ' has confirmed their account.'))
+                executor.submit(send_text,'8433430072@tmomail.net','Account Confirmed',user_name + ' has confirmed their account.')
             
             else:
                 confirmed = 0
@@ -235,13 +235,13 @@ def clock_action():
             # . . . Notify user
             subject = "You've Clocked In"
             body = "You've clocked in at " + message_time_now + "."
-            executor.submit(send_text_message, user_email, body)
+            executor.submit(send_text,user_email,subject,body)
 
             # . . . Notify manager
             subject = user_name + " has clocked in."
             body = user_name + " has clocked in at " + message_time_now + "." 
-            executor.submit(send_text_message, shawn_email,body)
-            executor.submit(send_text_message, jeanette_email,body)
+            executor.submit(send_text,shawn_email,subject,body)
+            executor.submit(send_text,jeanette_email,subject,body)
         
         elif clock_status == "End Shift":
             report = request.form['report']
@@ -255,13 +255,13 @@ def clock_action():
             # . . . send to user
             subject = "You've Clocked Out"
             body = "You've clocked out at " + message_time_now + "."
-            executor.submit(send_text_message,user_email,body)
+            executor.submit(send_text,user_email,subject,body)
 
             # . . . send to manager
             subject = user_name + " has clocked out."
             body = user_name + " has clocked out at " + message_time_now + ". End of day report :" + report
-            executor.submit(send_text_message,shawn_email,body)
-            executor.submit(send_text_message,jeanette_email,body)
+            executor.submit(send_text,shawn_email,subject,body)
+            executor.submit(send_text,jeanette_email,subject,body)
 
         # . . . find user pin and pass back to home 
         user_pin = (Users.query.filter(Users.name==user_name).first()).pin
@@ -395,8 +395,8 @@ def commit_record():
                 current_user = user.name
 
                 # . . . send message to manager and user
-                executor.submit(send_text_message,manager_email,user_change_manager_subject,user_change_manager_body)
-                executor.submit(send_text_message,user_email,user_change_user_subject,user_change_user_body)
+                executor.submit(send_text,manager_email,user_change_manager_subject,user_change_manager_body)
+                executor.submit(send_text,user_email,user_change_user_subject,user_change_user_body)
                 
             else:
                 
@@ -405,8 +405,8 @@ def commit_record():
                 user_email = user.email
                 current_user = user.name
 
-                executor.submit(send_text_message,manager_email,manager_change_manager_subject,manager_change_manager_body)
-                executor.submit(send_text_message,user_email,manager_change_user_subject,manager_change_user_body)
+                executor.submit(send_text,manager_email,manager_change_manager_subject,manager_change_manager_body)
+                executor.submit(send_text,user_email,manager_change_user_subject,manager_change_user_body)
 
             if selected_user == 'None':
                 return redirect(url_for('home', user_pin=user_pin,selected_user=selected_user))
@@ -445,7 +445,7 @@ def create_user():
 
             add_to_record("A new account has been created for " + name + ".")
             
-            executor.submit(send_text_message,email,body)
+            executor.submit(send_text,email,subject,body)
             
             # . . . refresh
             return home(admin_pin)
@@ -665,7 +665,7 @@ def send_weekly_report(start_report_date,end_report_date,function):
         if crew_member_weekly_hour_total > 0:
             website_output += crew_member_compiled_message
             if function == "live":
-                send_text(crew_member_email,"Your Weekly Working Report",crew_member_compiled_message)
+                                send_text(crew_member_email,"Your Weekly Working Report",crew_member_compiled_message)
             crew_member_weekly_summary_list += crew_member_weekly_summary_record
         else:
             pass
@@ -685,7 +685,7 @@ def send_weekly_report(start_report_date,end_report_date,function):
 
 # add to records
 def add_to_record(action):
-    db.session.add(PastActions(time = datetime.now(),action = action))
+    db.session.add(PastActions(time = datetime.now(), action = action))
     db.session.commit()
 
 # send texts
