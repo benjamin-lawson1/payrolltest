@@ -204,8 +204,8 @@ def home(user_pin,selected_user=None):
 def clock_action():
 
     if request.method == 'POST':
-        shawn_email = '18433435075'
-        jeanette_email = '18433437215'
+        shawn_email = 'shawn@kiawahislandgetaways.com'
+        jeanette_email = 'jeanette@kiawahislandgetaways.com'
         clock_status = request.form['clock_status']
         user_name = request.form['user']
         user_email = (Users.query.filter_by(name = user_name).first()).email
